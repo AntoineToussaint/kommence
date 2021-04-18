@@ -20,7 +20,7 @@ func (d Decorate) Produce(ctx context.Context) <-chan string {
 	out := make(chan string)
 	go func() {
 		for output := range d.source.Produce(ctx) {
-			out <- fmt.Sprintf("[%v] %v", d.source.ID(), output)
+			out <- fmt.Sprintf("(%v) %v", d.source.ID(), output)
 		}
 	}()
 	return out

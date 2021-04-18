@@ -6,14 +6,13 @@ import (
 	"github.com/radovskyb/watcher"
 	"log"
 	"os/exec"
-	"regexp"
 	"strings"
 	"time"
 )
 
 type RunnerConfiguration struct {
 	Name  string
-	Cmd   string
+	Command   string
 	Watch []string
 }
 
@@ -26,7 +25,7 @@ func (r Runner) ID() string {
 }
 
 func (r Runner) run(out chan string) {
-	args := strings.Split(r.Cmd, " ")
+	args := strings.Split(r.Command, " ")
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Stdout = NewLineBreaker(out)
 	err := cmd.Run()
@@ -35,12 +34,13 @@ func (r Runner) run(out chan string) {
 	}
 }
 
+
 func watch(config RunnerConfiguration) <-chan bool {
 	w := watcher.New()
 	w.SetMaxEvents(1)
 	events := make(chan bool)
-	r := regexp.MustCompile(".*.go")
-	w.AddFilterHook(watcher.RegexFilterHook(r, false))
+	//r := regexp.MustCompile(".*.go")
+	//w.AddFilterHook(watcher.RegexFilterHook(r, false))
 	w.FilterOps(watcher.Rename, watcher.Move, watcher.Write)
 	go func() {
 		for {
@@ -76,7 +76,7 @@ func (r Runner) Produce(ctx context.Context) <-chan string {
 	out := make(chan string)
 	events := watch(r.RunnerConfiguration)
 	go func() {
-		go r.run(out)
+		r.run(out)
 		for {
 			select {
 			case <-events:

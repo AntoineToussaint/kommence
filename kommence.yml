@@ -1,0 +1,5 @@
+run:
+  - name: ls
+    command: ls .
+  - name: echo
+    command: echo kommence
