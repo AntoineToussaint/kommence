@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"github.com/radovskyb/watcher"
 	"io"
 	"log"
@@ -129,11 +128,12 @@ func (r *Runner) Run(ctx context.Context) {
 	_ = r.cmd.Wait()
 }
 
+
 func (r *Runner) Restart(ctx context.Context) {
 	if err := r.cmd.Process.Kill(); err != nil {
 		log.Fatalf("failed to kill process %v: %v", r.Name, err)
 	}
-	fmt.Println("restarting:", r.Name)
+	r.out <- Message{Content: "*** restarting ***"}
 	go r.Start(ctx)
 }
 
