@@ -2,7 +2,6 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"sync"
 )
 
@@ -14,24 +13,9 @@ type Message struct {
 
 type Source interface {
 	ID() string
+	Start(ctx context.Context)
 	Produce(ctx context.Context) <-chan Message
 }
-
-
-type Decorate struct {
-	source Source
-}
-
-func (d Decorate) Produce(ctx context.Context) <-chan Message {
-	out := make(chan Message)
-	go func() {
-		for output := range d.source.Produce(ctx) {
-			out <- Message{Content: fmt.Sprintf("(%v) %v", d.source.ID(), output)}
-		}
-	}()
-	return out
-}
-
 
 
 func merge(cs ...<-chan Message) <-chan Message {

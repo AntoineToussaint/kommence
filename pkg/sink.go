@@ -14,7 +14,7 @@ type Console struct {}
 func (c *Console) Consume(ctx context.Context, sources []Source) {
 	var all []<-chan Message
 	for _, source := range sources {
-		all = append(all, Decorate{source}.Produce(ctx))
+		all = append(all, source.Produce(ctx))
 	}
 	out := merge(all...)
 	for output := range out {
