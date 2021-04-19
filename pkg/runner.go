@@ -2,13 +2,11 @@ package pkg
 
 import (
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"os/exec"
 	"strings"
 	"sync"
-	"time"
 )
 
 
@@ -20,6 +18,7 @@ type RunnerConfiguration struct {
 	Name    string
 	Command string
 	Watch   []string
+	Format FormatterConfiguration
 }
 
 type Runner struct {
@@ -30,9 +29,7 @@ type Runner struct {
 
 func NewRunner(c RunnerConfiguration) (*Runner, error) {
 	out := make(chan Message)
-	args := strings.Split(c.Command, " ")
-	cmd := exec.Command(args[0], args[1:]...)
-	runner := Runner{RunnerConfiguration: c, out: out, cmd: cmd}
+	runner := Runner{RunnerConfiguration: c, out: out}
 	return &runner, nil
 }
 
@@ -44,19 +41,15 @@ func (r *Runner) Produce(ctx context.Context) <-chan Message {
 	return r.out
 }
 
-func (r *Runner) Do(ctx context.Context) {
-	go r.Start(ctx)
-	t := time.NewTimer(5 * time.Second)
-	<- t.C
-	if strings.Contains(r.Name,"counter") {
-		fmt.Println("restarting")
-		r.Restart(ctx)
-	}
+func (r *Runner) Start(ctx context.Context) {
+	go r.Run(ctx)
 
 }
 
 
-func (r *Runner) Start(ctx context.Context) {
+func (r *Runner) Run(ctx context.Context) {
+	args := strings.Split(r.Command, " ")
+	r.cmd = exec.Command(args[0], args[1:]...)
 	stdout, _ := r.cmd.StdoutPipe()
 	stderr, _ := r.cmd.StderrPipe()
 	err := r.cmd.Start()

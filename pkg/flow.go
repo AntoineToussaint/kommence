@@ -25,10 +25,17 @@ func Flow(ctx context.Context, c *FlowConfiguration, r FlowRuntime) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		go runner.Do(ctx)
-		sources = append(sources, runner)
+		formatted, err := NewFormatter(config.Format, runner)
+		if err != nil {
+			log.Fatal(err)
+		}
+		sources = append(sources, formatted)
 	}
 	fmt.Printf("running flow with %v sources\n", len(sources))
+
+	for _, source := range sources {
+		go source.Start(ctx)
+	}
 	out := Console{}
 	out.Consume(ctx, sources)
 }
