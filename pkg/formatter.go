@@ -16,6 +16,7 @@ type FormatterConfiguration struct {
 type Formatter struct {
 	FormatterConfiguration
 	source Source
+	padding string
 }
 
 func (d Formatter) ID() string {
@@ -26,8 +27,13 @@ func (d Formatter) Start(ctx context.Context) {
 	d.source.Start(ctx)
 }
 
-func NewFormatter(c FormatterConfiguration, source Source) (*Formatter, error) {
-	return &Formatter{FormatterConfiguration: c, source: source}, nil
+func NewFormatter(c FormatterConfiguration, source Source, maxLength int) (*Formatter, error) {
+	pad := maxLength - len(source.ID())
+	padding := ""
+	for i := 0 ; i<pad ;i++ {
+		padding += " "
+	}
+	return &Formatter{FormatterConfiguration: c, source: source, padding: padding}, nil
 }
 
 type flat = map[string]interface{}
@@ -45,7 +51,7 @@ func (d Formatter) Format(msg Message) Message {
 			out.Content = strings.Join(flat, " ")
 		}
 	}
-	out.Content = fmt.Sprintf("(%v) %v", d.source.ID(), out.Content)
+	out.Content = fmt.Sprintf("%v(%v) %v", d.padding, d.source.ID(), out.Content)
 	switch d.Color {
 	case "red":
 		out.Content = color.FgRed.Render(out.Content)

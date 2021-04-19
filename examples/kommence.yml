@@ -2,13 +2,13 @@ run:
   - name: counter
     command: ./examples/counter.sh
     watch:
-      - examples/counter.sh
+      - examples
     format:
       color: red
   - name: json
     command: ./examples/json.sh
     watch:
-      - examples/json.sh
+      - examples
     format:
       color: blue
       json: flatten
