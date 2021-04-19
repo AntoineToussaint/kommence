@@ -6,9 +6,15 @@ import (
 	"sync"
 )
 
+
+type Message struct {
+	Content string
+
+}
+
 type Source interface {
 	ID() string
-	Produce(ctx context.Context) <-chan string
+	Produce(ctx context.Context) <-chan Message
 }
 
 
@@ -16,11 +22,11 @@ type Decorate struct {
 	source Source
 }
 
-func (d Decorate) Produce(ctx context.Context) <-chan string {
-	out := make(chan string)
+func (d Decorate) Produce(ctx context.Context) <-chan Message {
+	out := make(chan Message)
 	go func() {
 		for output := range d.source.Produce(ctx) {
-			out <- fmt.Sprintf("(%v) %v", d.source.ID(), output)
+			out <- Message{Content: fmt.Sprintf("(%v) %v", d.source.ID(), output)}
 		}
 	}()
 	return out
@@ -28,13 +34,13 @@ func (d Decorate) Produce(ctx context.Context) <-chan string {
 
 
 
-func merge(cs ...<-chan string) <-chan string {
+func merge(cs ...<-chan Message) <-chan Message {
 	var wg sync.WaitGroup
-	out := make(chan string)
+	out := make(chan Message)
 
 	// Start an output goroutine for each input channel in cs.  output
 	// copies values from c to out until c is closed, then calls wg.Done.
-	output := func(c <-chan string) {
+	output := func(c <-chan Message) {
 		for n := range c {
 			out <- n
 		}

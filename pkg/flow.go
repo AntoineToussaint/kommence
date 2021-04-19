@@ -3,23 +3,33 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"log"
 )
 
 type FlowRuntime struct {
 	Runs []string
 }
 
-func Flow(c FlowConfiguration, r FlowRuntime) {
+func Flow(ctx context.Context, c *FlowConfiguration, r FlowRuntime) {
 	var sources []Source
 	allRunConfigurations := make(map[string]RunnerConfiguration)
 	for _, run := range c.Run {
 		allRunConfigurations[run.Name] = run
 	}
 	for _, run := range r.Runs {
-		sources = append(sources, Runner{RunnerConfiguration: allRunConfigurations[run]})
+		config, ok := allRunConfigurations[run]
+		if !ok {
+			log.Fatalf("run %v is not in the configuration", run)
+		}
+		runner, err := NewRunner(config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		go runner.Do(ctx)
+		sources = append(sources, runner)
 	}
 	fmt.Printf("running flow with %v sources\n", len(sources))
 	out := Console{}
-	ctx := context.Background()
 	out.Consume(ctx, sources)
 }
+

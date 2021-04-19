@@ -12,13 +12,13 @@ type Sink interface {
 type Console struct {}
 
 func (c *Console) Consume(ctx context.Context, sources []Source) {
-	var all []<-chan string
+	var all []<-chan Message
 	for _, source := range sources {
 		all = append(all, Decorate{source}.Produce(ctx))
 	}
 	out := merge(all...)
 	for output := range out {
-		fmt.Println(output)
+		fmt.Println(output.Content)
 
 	}
 }
