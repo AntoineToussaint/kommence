@@ -1,0 +1,14 @@
+run:
+  - name: counter
+    command: ./examples/counter.sh
+    watch:
+      - examples/counter.sh
+    format:
+      color: red
+  - name: json
+    command: ./examples/json.sh
+    watch:
+      - examples/json.sh
+    format:
+      color: blue
+      json: flatten
