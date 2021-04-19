@@ -3,86 +3,84 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"github.com/radovskyb/watcher"
+	"io"
 	"log"
 	"os/exec"
 	"strings"
+	"sync"
 	"time"
 )
 
+
+/*
+A Runner is an example of a Source
+
+ */
 type RunnerConfiguration struct {
-	Name  string
-	Command   string
-	Watch []string
+	Name    string
+	Command string
+	Watch   []string
 }
 
 type Runner struct {
 	RunnerConfiguration
+	cmd *exec.Cmd
+	out chan Message
 }
 
-func (r Runner) ID() string {
+func NewRunner(c RunnerConfiguration) (*Runner, error) {
+	out := make(chan Message)
+	args := strings.Split(c.Command, " ")
+	cmd := exec.Command(args[0], args[1:]...)
+	runner := Runner{RunnerConfiguration: c, out: out, cmd: cmd}
+	return &runner, nil
+}
+
+func (r *Runner) ID() string {
 	return r.Name
 }
 
-func (r Runner) run(out chan string) {
-	args := strings.Split(r.Command, " ")
-	cmd := exec.Command(args[0], args[1:]...)
-	cmd.Stdout = NewLineBreaker(out)
-	err := cmd.Run()
+func (r *Runner) Produce(ctx context.Context) <-chan Message {
+	return r.out
+}
+
+func (r *Runner) Do(ctx context.Context) {
+	go r.Start(ctx)
+	t := time.NewTimer(5 * time.Second)
+	<- t.C
+	if strings.Contains(r.Name,"counter") {
+		fmt.Println("restarting")
+		r.Restart(ctx)
+	}
+
+}
+
+
+func (r *Runner) Start(ctx context.Context) {
+	stdout, _ := r.cmd.StdoutPipe()
+	stderr, _ := r.cmd.StderrPipe()
+	err := r.cmd.Start()
 	if err != nil {
-		fmt.Println("ERROR", err)
+		log.Fatalf("cmd.Start() failed with '%s'\n", err)
 	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+
+	go func() {
+		_, err = io.Copy(NewLineBreaker(r.out), stdout)
+		wg.Done()
+	}()
+	_, _ = io.Copy(NewLineBreaker(r.out), stderr)
+
+	wg.Wait()
+	_ = r.cmd.Wait()
 }
 
-
-func watch(config RunnerConfiguration) <-chan bool {
-	w := watcher.New()
-	w.SetMaxEvents(1)
-	events := make(chan bool)
-	//r := regexp.MustCompile(".*.go")
-	//w.AddFilterHook(watcher.RegexFilterHook(r, false))
-	w.FilterOps(watcher.Rename, watcher.Move, watcher.Write)
-	go func() {
-		for {
-			select {
-			case event := <-w.Event:
-				fmt.Println(event)
-				events <- true
-			case err := <-w.Error:
-				log.Fatalln(err)
-			case <-w.Closed:
-				return
-			}
-		}
-	}()
-
-	// Watch this folder for changes.
-	for _, path := range config.Watch {
-		if err := w.AddRecursive(path); err != nil {
-			log.Fatalln(err)
-		}
+func (r *Runner) Restart(ctx context.Context) {
+	if err := r.cmd.Process.Kill(); err != nil {
+		log.Fatalf("failed to kill process %v: %v", r.Name, err)
 	}
-	go func() {
-		// Start the watching process - it'll check for changes every 100ms.
-		if err := w.Start(time.Millisecond * 100); err != nil {
-			log.Fatalln(err)
-		}
-
-	}()
-	return events
+	go r.Start(ctx)
 }
 
-func (r Runner) Produce(ctx context.Context) <-chan string {
-	out := make(chan string)
-	events := watch(r.RunnerConfiguration)
-	go func() {
-		r.run(out)
-		for {
-			select {
-			case <-events:
-				go r.run(out)
-			}
-		}
-	}()
-	return out
-}

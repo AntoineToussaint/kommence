@@ -1,11 +1,11 @@
 package pkg
 
 type LineBreaker struct {
-	Output      chan string
+	Output      chan Message
 	currentLine []byte
 }
 
-func NewLineBreaker(out chan string) *LineBreaker {
+func NewLineBreaker(out chan Message) *LineBreaker {
 	return &LineBreaker{Output: out}
 }
 
@@ -14,18 +14,14 @@ func (w *LineBreaker) Write(p []byte) (int, error) {
 	for _ , c := range p {
 		total++
 		if c == '\n' {
-			w.Output <- string(w.currentLine)
-			w.currentLine = []byte{}
+			w.Output <- Message{Content: string(w.currentLine)}
+			w.currentLine = nil
 			continue
 		}
 		w.currentLine = append(w.currentLine, c)
 	}
+	if w.currentLine != nil {
+		w.Output <- Message{Content: string(w.currentLine)}
+	}
 	return total, nil
-}
-
-
-// Close flushes the last of the output into the underlying writer.
-func (w *LineBreaker) Close() error {
-	w.Output <- string(w.currentLine)
-	return nil
 }
