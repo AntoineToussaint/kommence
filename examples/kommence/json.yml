@@ -2,6 +2,6 @@ run:
   cmd: ./examples/json.sh
   watch:
     - examples
-  format:
-    color: blue
-    json: flatten
+format:
+  color: blue
+  json: flatten

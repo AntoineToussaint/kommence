@@ -2,5 +2,5 @@ run:
   cmd: ./examples/counter.sh
   watch:
     - examples
-  format:
-    color: red
+format:
+  color: red

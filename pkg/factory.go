@@ -11,7 +11,9 @@ import (
 )
 
 type FlowConfiguration struct {
-	Run []*RunnerConfiguration
+	Runs []*RunnerConfiguration
+	Kubes []*KubeConfiguration
+
 }
 
 func LoadRun(f string, name string) (*RunnerConfiguration, error) {
@@ -34,6 +36,27 @@ func LoadRun(f string, name string) (*RunnerConfiguration, error) {
 	return &cfg, nil
 }
 
+
+func LoadKube(f string, name string) (*KubeConfiguration, error) {
+	data, err := ioutil.ReadFile(f)
+	if err != nil {
+		return nil, errors.Wrapf(err, "can't load file: %v", f)
+	}
+	var cfg KubeConfiguration
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
+	}
+	if cfg.Kube.Deployment == "" {
+		return nil, nil
+	}
+	// Overwrite the name from the file name if not set
+	if cfg.Kube.Name == "" {
+		cfg.Kube.Name = strings.Split(name, ".")[0]
+	}
+	return &cfg, nil
+}
+
 func LoadFlowConfiguration(kommenceDir string) (*FlowConfiguration, error) {
 	// We load all the files in the kommence directory
 	config := FlowConfiguration{}
@@ -51,12 +74,24 @@ func LoadFlowConfiguration(kommenceDir string) (*FlowConfiguration, error) {
 				return err
 			}
 			if run != nil {
-				config.Run = append(config.Run, run)
+				config.Runs = append(config.Runs, run)
+			}
+			kube, err := LoadKube(p, info.Name())
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+			if kube != nil {
+				config.Kubes = append(config.Kubes, kube)
 			}
 			return nil
 		})
 	if err != nil {
 		return nil, errors.Wrap(err, "can't load kommence configuration")
+	}
+	// load kubernetes client
+	if len(config.Kubes) > 0 {
+		LoadKubeClient()
 	}
 	return &config, nil
 }

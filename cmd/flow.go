@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"github.com/antoinetoussaint/kommence/pkg"
 	"github.com/spf13/cobra"
 )
 
 var runs []string
+var kubes []string
 
 // flowCmd represents the flow command
 var flowCmd = &cobra.Command{
@@ -20,13 +22,17 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		config, _ := pkg.LoadFlowConfiguration(kommenceDir)
-		pkg.Flow(ctx, config, pkg.FlowRuntime{Runs: runs})
+		config, err := pkg.LoadFlowConfiguration(kommenceDir)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		pkg.Flow(ctx, config, pkg.FlowRuntime{Runs: runs, Kubes: kubes})
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(flowCmd)
 	flowCmd.PersistentFlags().StringSliceVar(&runs, "run", nil, "environment")
-
+	flowCmd.PersistentFlags().StringSliceVar(&kubes, "kube", nil, "environment")
 }

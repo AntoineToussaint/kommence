@@ -18,8 +18,8 @@ type RunnerConfiguration struct {
 		Name   string
 		Cmd    string
 		Watch  []string
-		Format FormatterConfiguration
 	}
+	Format FormatterConfiguration
 }
 
 type Runner struct {
@@ -62,7 +62,7 @@ func (r *Runner) CreateWatcher() <-chan bool {
 	// Only files that match the regular expression during file listings
 	// will be watched.
 	//r := regexp.MustCompile("^abc$")
-	//w.AddFilterHook(watcher.Run.RegexFilterHook(r, false))
+	//w.AddFilterHook(watcher.Runs.RegexFilterHook(r, false))
 
 	go func() {
 		for {

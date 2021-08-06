@@ -8,6 +8,13 @@ import (
 	"strings"
 )
 
+type Type int
+
+const (
+	RunType Type = iota
+	KubeType
+)
+
 type FormatterConfiguration struct {
 	Color string
 	Json  string
@@ -15,8 +22,9 @@ type FormatterConfiguration struct {
 
 type Formatter struct {
 	FormatterConfiguration
-	source Source
+	source  Source
 	padding string
+	Type    Type
 }
 
 func (d Formatter) ID() string {
@@ -35,7 +43,7 @@ func pickColor() string {
 	return colors[col % 4]
 }
 
-func NewFormatter(c FormatterConfiguration, source Source, maxLength int) (*Formatter, error) {
+func NewFormatter(t Type, c FormatterConfiguration, source Source, maxLength int) (*Formatter, error) {
 	pad := maxLength - len(source.ID())
 	padding := ""
 	for i := 0 ; i<pad ;i++ {
@@ -44,10 +52,18 @@ func NewFormatter(c FormatterConfiguration, source Source, maxLength int) (*Form
 	if c.Color == "" {
 		c.Color = pickColor()
 	}
-	return &Formatter{FormatterConfiguration: c, source: source, padding: padding}, nil
+	return &Formatter{Type: t, FormatterConfiguration: c, source: source, padding: padding}, nil
 }
 
 type flat = map[string]interface{}
+
+var prefixes map[Type]string
+
+func init() {
+	prefixes = make(map[Type]string)
+	prefixes[RunType] = "Ⓡ"
+	prefixes[KubeType] = "⎈"
+}
 
 func (d Formatter) Format(msg Message) Message {
 	out := Message{Content: msg.Content}
@@ -62,7 +78,7 @@ func (d Formatter) Format(msg Message) Message {
 			out.Content = strings.Join(flat, " ")
 		}
 	}
-	out.Content = fmt.Sprintf("(%v)%v %v", d.source.ID(), d.padding, out.Content)
+	out.Content = fmt.Sprintf("(%v %v)%v %v", prefixes[d.Type], d.source.ID(), d.padding, out.Content)
 	switch d.Color {
 	case "red":
 		out.Content = color.FgRed.Render(out.Content)
