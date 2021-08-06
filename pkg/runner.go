@@ -2,6 +2,7 @@ package pkg
 
 import (
 	"context"
+	"fmt"
 	"github.com/radovskyb/watcher"
 	"io"
 	"log"
@@ -11,22 +12,24 @@ import (
 	"time"
 )
 
-
-/*
-A Runner is an example of a Source
-
- */
+// RunnerConfiguration //
 type RunnerConfiguration struct {
-	Name    string
-	Command string
-	Watch   []string
-	Format FormatterConfiguration
+	Run struct {
+		Name   string
+		Cmd    string
+		Watch  []string
+		Format FormatterConfiguration
+	}
 }
 
 type Runner struct {
 	RunnerConfiguration
 	cmd *exec.Cmd
 	out chan Message
+}
+
+func (r Runner) String() string {
+	return fmt.Sprintf("%v: %v", r.RunnerConfiguration.Run.Name, r.RunnerConfiguration.Run.Cmd)
 }
 
 func NewRunner(c RunnerConfiguration) (*Runner, error) {
@@ -36,7 +39,7 @@ func NewRunner(c RunnerConfiguration) (*Runner, error) {
 }
 
 func (r *Runner) ID() string {
-	return r.Name
+	return r.RunnerConfiguration.Run.Name
 }
 
 func (r *Runner) Produce(ctx context.Context) <-chan Message {
@@ -59,7 +62,7 @@ func (r *Runner) CreateWatcher() <-chan bool {
 	// Only files that match the regular expression during file listings
 	// will be watched.
 	//r := regexp.MustCompile("^abc$")
-	//w.AddFilterHook(watcher.RegexFilterHook(r, false))
+	//w.AddFilterHook(watcher.Run.RegexFilterHook(r, false))
 
 	go func() {
 		for {
@@ -75,7 +78,7 @@ func (r *Runner) CreateWatcher() <-chan bool {
 	}()
 
 	// Watch this folder for changes.
-	for _, p := range r.Watch {
+	for _, p := range r.RunnerConfiguration.Run.Watch {
 		if err := w.AddRecursive(p); err != nil {
 			log.Fatalln(err)
 		}
@@ -101,18 +104,16 @@ func (r *Runner) Start(ctx context.Context) {
 			}
 		}
 	}
-
 }
 
-
 func (r *Runner) Run(ctx context.Context) {
-	args := strings.Split(r.Command, " ")
+	args := strings.Split(r.RunnerConfiguration.Run.Cmd, " ")
 	r.cmd = exec.Command(args[0], args[1:]...)
 	stdout, _ := r.cmd.StdoutPipe()
 	stderr, _ := r.cmd.StderrPipe()
 	err := r.cmd.Start()
 	if err != nil {
-		log.Fatalf("cmd.Start() failed with '%s'\n", err)
+		log.Fatalf("%v: cmd.Start() failed with '%s'\n", r, err)
 	}
 
 	var wg sync.WaitGroup
@@ -128,12 +129,10 @@ func (r *Runner) Run(ctx context.Context) {
 	_ = r.cmd.Wait()
 }
 
-
 func (r *Runner) Restart(ctx context.Context) {
 	if err := r.cmd.Process.Kill(); err != nil {
-		log.Fatalf("failed to kill process %v: %v", r.Name, err)
+		log.Fatalf("failed to kill process %v: %v", r.RunnerConfiguration.Run.Name, err)
 	}
 	r.out <- Message{Content: "*** restarting ***"}
 	go r.Start(ctx)
 }
-

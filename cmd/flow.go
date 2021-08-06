@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/antoinetoussaint/kommence/pkg"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 var runs []string
@@ -21,7 +20,7 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		ctx := context.Background()
-		config, _ := pkg.LoadFlowConfiguration(viper.GetViper())
+		config, _ := pkg.LoadFlowConfiguration(kommenceDir)
 		pkg.Flow(ctx, config, pkg.FlowRuntime{Runs: runs})
 	},
 }

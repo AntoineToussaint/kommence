@@ -13,12 +13,12 @@ type FlowRuntime struct {
 
 func Flow(ctx context.Context, c *FlowConfiguration, r FlowRuntime) {
 	var sources []Source
-	allRunConfigurations := make(map[string]RunnerConfiguration)
+	allRunConfigurations := make(map[string]*RunnerConfiguration)
 	var runs []string
 
 	for _, run := range c.Run {
-		runs = append(runs, run.Name)
-		allRunConfigurations[run.Name] = run
+		runs = append(runs, run.Run.Name)
+		allRunConfigurations[run.Run.Name] = run
 	}
 	// If runs are specified, we only start those
 	if len(r.Runs) > 0 {
@@ -37,11 +37,11 @@ func Flow(ctx context.Context, c *FlowConfiguration, r FlowRuntime) {
 		if !ok {
 			log.Fatalf("run %v is not in the configuration", run)
 		}
-		runner, err := NewRunner(config)
+		runner, err := NewRunner(*config)
 		if err != nil {
 			log.Fatal(err)
 		}
-		formatted, err := NewFormatter(config.Format, runner, maxLength)
+		formatted, err := NewFormatter(config.Run.Format, runner, maxLength)
 		if err != nil {
 			log.Fatal(err)
 		}

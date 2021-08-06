@@ -27,11 +27,22 @@ func (d Formatter) Start(ctx context.Context) {
 	d.source.Start(ctx)
 }
 
+var col int
+
+func pickColor() string {
+	colors := []string{"red", "blue", "yellow", "green"}
+	col++
+	return colors[col % 4]
+}
+
 func NewFormatter(c FormatterConfiguration, source Source, maxLength int) (*Formatter, error) {
 	pad := maxLength - len(source.ID())
 	padding := ""
 	for i := 0 ; i<pad ;i++ {
 		padding += " "
+	}
+	if c.Color == "" {
+		c.Color = pickColor()
 	}
 	return &Formatter{FormatterConfiguration: c, source: source, padding: padding}, nil
 }
@@ -51,7 +62,7 @@ func (d Formatter) Format(msg Message) Message {
 			out.Content = strings.Join(flat, " ")
 		}
 	}
-	out.Content = fmt.Sprintf("%v(%v) %v", d.padding, d.source.ID(), out.Content)
+	out.Content = fmt.Sprintf("(%v)%v %v", d.source.ID(), d.padding, out.Content)
 	switch d.Color {
 	case "red":
 		out.Content = color.FgRed.Render(out.Content)

@@ -9,4 +9,5 @@ require (
 	github.com/radovskyb/watcher v1.0.7 // indirect
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/viper v1.7.0 // indirect
+	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect
 )
