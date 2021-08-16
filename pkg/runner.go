@@ -3,21 +3,22 @@ package pkg
 import (
 	"context"
 	"fmt"
-	"github.com/radovskyb/watcher"
 	"io"
 	"log"
 	"os/exec"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/radovskyb/watcher"
 )
 
 // RunnerConfiguration //
 type RunnerConfiguration struct {
 	Run struct {
-		Name   string
-		Cmd    string
-		Watch  []string
+		Name  string
+		Cmd   string
+		Watch []string
 	}
 	Format FormatterConfiguration
 }
@@ -35,6 +36,19 @@ func (r Runner) String() string {
 func NewRunner(c RunnerConfiguration) (*Runner, error) {
 	out := make(chan Message)
 	runner := Runner{RunnerConfiguration: c, out: out}
+	w := runner.CreateWatcher()
+	go func() {
+		for {
+			select {
+			case <-w.Event:
+				runner.Restart(context.Background())
+			case err := <-w.Error:
+				log.Fatalln(err)
+			case <-w.Closed:
+				return
+			}
+		}
+	}()
 	return &runner, nil
 }
 
@@ -46,8 +60,8 @@ func (r *Runner) Produce(ctx context.Context) <-chan Message {
 	return r.out
 }
 
-func (r *Runner) CreateWatcher() <-chan bool {
-	out := make(chan bool)
+func (r *Runner) CreateWatcher() *watcher.Watcher {
+	//out := make(chan bool)
 	w := watcher.New()
 
 	// SetMaxEvents to 1 to allow at most 1 event's to be received
@@ -64,18 +78,18 @@ func (r *Runner) CreateWatcher() <-chan bool {
 	//r := regexp.MustCompile("^abc$")
 	//w.AddFilterHook(watcher.Runs.RegexFilterHook(r, false))
 
-	go func() {
-		for {
-			select {
-			case <-w.Event:
-				out <- true
-			case err := <-w.Error:
-				log.Fatalln(err)
-			case <-w.Closed:
-				return
-			}
-		}
-	}()
+	// go func() {
+	// 	for {
+	// 		select {
+	// 		case <-w.Event:
+	// 			out <- true
+	// 		case err := <-w.Error:
+	// 			log.Fatalln(err)
+	// 		case <-w.Closed:
+	// 			return
+	// 		}
+	// 	}
+	// }()
 
 	// Watch this folder for changes.
 	for _, p := range r.RunnerConfiguration.Run.Watch {
@@ -90,20 +104,11 @@ func (r *Runner) CreateWatcher() <-chan bool {
 			log.Fatalln(err)
 		}
 	}()
-	return out
+	return w
 }
 
 func (r *Runner) Start(ctx context.Context) {
 	go r.Run(ctx)
-	// Watcher
-	if w := r.CreateWatcher(); w != nil {
-		for {
-			select {
-			case <-w:
-				r.Restart(ctx)
-			}
-		}
-	}
 }
 
 func (r *Runner) Run(ctx context.Context) {
@@ -130,6 +135,7 @@ func (r *Runner) Run(ctx context.Context) {
 }
 
 func (r *Runner) Restart(ctx context.Context) {
+	fmt.Println(r.cmd)
 	if err := r.cmd.Process.Kill(); err != nil {
 		log.Fatalf("failed to kill process %v: %v", r.RunnerConfiguration.Run.Name, err)
 	}
