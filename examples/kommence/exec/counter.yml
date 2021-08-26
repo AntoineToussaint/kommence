@@ -1,0 +1,3 @@
+cmd: ./examples/counter.sh
+format:
+  color: red

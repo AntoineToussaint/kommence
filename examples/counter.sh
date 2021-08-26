@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-
 i=0
 while true
 do

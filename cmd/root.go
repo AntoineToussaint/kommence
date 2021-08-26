@@ -8,6 +8,7 @@ import (
 )
 
 var kommenceDir string
+var debug bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -40,6 +41,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&kommenceDir, "config", "kommence", "kommence folder (default is kommence")
+	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug mode")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
