@@ -1,5 +1,6 @@
 cmd: ./examples/json.sh
+name: json
+shorcut: j
+description: Run a counter in JSON
 watch:
   - examples
-format:
-  color: blue

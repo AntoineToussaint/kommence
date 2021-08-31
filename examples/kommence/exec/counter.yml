@@ -1,3 +1,4 @@
 cmd: ./examples/counter.sh
-format:
-  color: red
+name: counter
+shorcut: c
+description: Run a counter
