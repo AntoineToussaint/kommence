@@ -14,7 +14,7 @@ type Runner struct {
 }
 
 type Configuration struct {
-	Runs []string
+	Executables []string
 }
 
 type Runnable interface {
@@ -42,11 +42,17 @@ func (p *PaddedID) ID(id string) string {
 	return id + padding
 }
 
+const tmpl = `{{if .Timestamp}} [{{.Timestamp}}]{{end}}{{if .Level}} [{{.Level}}]{{end}} {{.Parsed}}`
+
 func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
+
 	var starting []Runnable
 
-	for _, run := range cfg.Runs {
-		if c, ok := r.Configuration.Execs.Get(run); ok {
+	var styler output.Styler
+	styles := make(map[string]output.Style)
+
+	for _, executable := range cfg.Executables {
+		if c, ok := r.Configuration.Execs.Get(executable); ok {
 			exec := NewExecutable(r.Logger, c)
 			starting = append(starting, exec)
 		}
@@ -56,12 +62,19 @@ func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 		if l := len(start.ID()); l > maxIDLength {
 			maxIDLength = l
 		}
+		styles[start.ID()] = styler.Next()
 	}
 	padding := PaddedID{Length: maxIDLength}
 
 	go func() {
 		for msg := range r.Receiver {
-			r.Logger.Printf(padding.ID(msg.ID) + " > " + msg.Content + "\n")
+			// Parse message
+			parsed := output.ParseToStructured(msg.Content)
+			// Render it
+			rendered := output.FromTemplate(tmpl, parsed)
+			// Style it
+			style := styles[msg.ID]
+			r.Logger.Printf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
 		}
 	}()
 	var wg sync.WaitGroup

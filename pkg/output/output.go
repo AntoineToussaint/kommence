@@ -24,6 +24,7 @@ func NewLogger(debug bool, opts ...LoggerOption) *Logger {
 	logger := &Logger{
 		out: os.Stdout,
 		err: os.Stderr,
+		debug: debug,
 	}
 	for _, opt := range opts {
 		opt(logger)
@@ -58,7 +59,7 @@ func (l *Logger) Debugf(s string, args...interface{}) {
 			fmtArgs = append(fmtArgs, arg)
 		}
 		c := color.New(attributes...)
-		msg := c.Sprintf("[FATAL] " + s, fmtArgs...)
+		msg := c.Sprintf("[DEBUG] " + s, fmtArgs...)
 		_, _ = l.out.Write([]byte(msg))
 	}
 }

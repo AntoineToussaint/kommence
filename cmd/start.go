@@ -15,6 +15,7 @@ import (
 )
 
 var interactive bool
+var execs []string
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
@@ -27,7 +28,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		cancel := make(chan os.Signal, 2)
+		signal.Notify(cancel, os.Interrupt, syscall.SIGTERM)
+		ctx := context.Background()
 		log := output.NewLogger(debug)
+
+		log.Debugf("starting in debug mode\n")
 		config, err := configuration.Load(log, kommenceDir)
 		if err != nil {
 			log.Errorf(err.Error(), color.FgRed, color.Bold)
@@ -35,8 +41,16 @@ to quickly create a Cobra application.`,
 		}
 
 		if interactive {
-			startInteractive(log, config)
+			log.Debugf("starting interactive mode\n")
+			startInteractive(ctx, log, config)
+		} else if len(execs) > 0 {
+			log.Debugf("starting runner mode\n")
+			startRunner(ctx, log, config)
 		}
+
+		<-cancel
+		ctx.Done()
+		os.Exit(1)
 	},
 }
 
@@ -69,29 +83,35 @@ func getRuns(ctx context.Context, c *configuration.Configuration) string {
 			}}))
 }
 
-func startInteractive(log *output.Logger, c *configuration.Configuration) {
-	ctx := context.Background()
+func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
 	log.Printf("Select executables to run then press Enter:\n")
-
 	in := getRuns(ctx, c)
 	runs := strings.Split(in, " ")
 	r := runner.New(log, c)
 
-	cancel := make(chan os.Signal, 2)
-	signal.Notify(cancel, os.Interrupt, syscall.SIGTERM)
 	go func() {
-		err := r.Run(ctx, runner.Configuration{Runs: runs})
+		err := r.Run(ctx, runner.Configuration{Executables: runs})
 		if err != nil {
 			log.Errorf("can't run")
 		}
 	}()
-	<-cancel
-	ctx.Done()
-	os.Exit(1)
+
+}
+
+func startRunner(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
+	r := runner.New(log, c)
+
+	go func() {
+		err := r.Run(ctx, runner.Configuration{Executables: execs})
+		if err != nil {
+			log.Errorf("can't run")
+		}
+	}()
 
 }
 
 func init() {
 	rootCmd.AddCommand(startCmd)
 	startCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "i", false, "Interactive mode")
+	startCmd.PersistentFlags().StringSliceVarP(&execs, "execs", "x", nil, "Executables to run")
 }

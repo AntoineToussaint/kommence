@@ -76,7 +76,7 @@ func (r *Runner) CreateWatcher() *watcher.Watcher {
 	// Only files that match the regular expression during file listings
 	// will be watched.
 	//r := regexp.MustCompile("^abc$")
-	//w.AddFilterHook(watcher.Runs.RegexFilterHook(r, false))
+	//w.AddFilterHook(watcher.Executables.RegexFilterHook(r, false))
 
 	// go func() {
 	// 	for {
