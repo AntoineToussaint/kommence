@@ -8,35 +8,28 @@ import (
 	"time"
 )
 
+const TimeFormat = "15:04:05"
+
 type StructuredLog struct {
-	Raw string
 	Level string
-	Timestamp time.Time
+	Timestamp string
 	Parsed string
 }
 
 type Data map[string]string
 
-func matchLevel(s string) bool {
-	switch s {
+func matchLevel(s string) (string, bool) {
+	switch strings.ToLower(s) {
 	case "info":
-		return true
-	case "INFO":
-		return true
+		return "INFO", true
 	case "debug":
-		return true
-	case "DEBUG":
-		return true
+		return "DEBUG", true
 	case "error":
-		return true
-	case "ERROR":
-		return true
+		return "ERROR", true
 	case "warn":
-		return true
-	case "WARN":
-		return true
+		return "WARN", true
 	}
-	return false
+	return "", false
 }
 
 func matchTimestamp(s string) (time.Time, bool) {
@@ -46,7 +39,7 @@ func matchTimestamp(s string) (time.Time, bool) {
 
 func ParseToStructured(l string) StructuredLog {
 	s := StructuredLog{
-		Raw: l,
+		Parsed: l,
 	}
 	// Try to parse JSON parse
 	var data Data
@@ -57,13 +50,13 @@ func ParseToStructured(l string) StructuredLog {
 	var strip []string
 	// Find a Level
 	for k, v := range data {
-		if matchLevel(v) {
+		if lvl, ok := matchLevel(v); ok {
 			strip = append(strip, k)
-			s.Level = v
+			s.Level = lvl
 		}
 		if t, ok := matchTimestamp(v); ok {
 			strip = append(strip, k)
-			s.Timestamp = t
+			s.Timestamp = t.Format(TimeFormat)
 		}
 	}
 	for _, c := range strip {

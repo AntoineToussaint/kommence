@@ -19,7 +19,7 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 		return nil, fmt.Errorf("can't load executable configurations: %v", err)
 	}
 	cfg.Execs = execs
-	logger.Debugf("loaded %v executable configurations", len(execs.Commands))
+	logger.Debugf("loaded %v executable configurations\n", len(execs.Commands))
 	return &cfg, nil
 }
 
