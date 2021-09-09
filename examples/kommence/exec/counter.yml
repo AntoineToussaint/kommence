@@ -2,3 +2,5 @@ cmd: ./examples/counter.sh
 name: counter
 shorcut: c
 description: Run a counter
+watch:
+  - examples/counter.sh

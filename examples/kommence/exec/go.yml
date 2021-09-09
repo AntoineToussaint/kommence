@@ -1,0 +1,6 @@
+cmd: go run examples/main.go
+name: go
+shorcut: g
+description: Run a go program
+watch:
+  - examples/main.go
