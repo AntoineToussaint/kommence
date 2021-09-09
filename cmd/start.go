@@ -53,8 +53,9 @@ to quickly create a Cobra application.`,
 
 		<-cancel
 		stop()
+		log.Printf("\nStopping all running processes.\n", color.Bold)
 		time.Sleep(time.Second)
-		os.Exit(1)
+		os.Exit(0)
 	},
 }
 

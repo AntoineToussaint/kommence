@@ -83,7 +83,7 @@ func (p *Pod) Start(ctx context.Context, rec chan output.Message) error {
 	if !found {
 		return fmt.Errorf("no pod matching %v found", p.config.Name)
 	}
-
+	
 	p.logger.Debugf("aggregating log for pod: %v\n", pod.Name)
 	err = p.aggregateLog(ctx, pod, rec)
 	if err != nil {

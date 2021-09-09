@@ -1,0 +1,6 @@
+id: error
+shortcut: e
+description: Send error to stderr
+cmd: ./examples/error.sh
+watch:
+  - examples/error.sh
