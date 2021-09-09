@@ -12,6 +12,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var interactive bool
@@ -32,6 +33,7 @@ to quickly create a Cobra application.`,
 		cancel := make(chan os.Signal, 2)
 		signal.Notify(cancel, os.Interrupt, syscall.SIGTERM)
 		ctx := context.Background()
+		ctx, stop := context.WithCancel(ctx)
 		log := output.NewLogger(debug)
 
 		log.Debugf("starting in debug mode\n")
@@ -50,7 +52,8 @@ to quickly create a Cobra application.`,
 		}
 
 		<-cancel
-		ctx.Done()
+		stop()
+		time.Sleep(time.Second)
 		os.Exit(1)
 	},
 }

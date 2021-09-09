@@ -46,6 +46,10 @@ func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
 			select {
 			case <-w.Event:
 				go e.restart(ctx, rec)
+			case <-ctx.Done():
+				e.logger.Debugf("killing process: %v\n", e.ID())
+				e.kill(ctx, rec)
+				return
 			case err := <-w.Error:
 				log.Fatalln(err)
 			case <-w.Closed:
@@ -94,6 +98,7 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 
 func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
+	
 	// Request the OS to assign process group to the new process, to which all its children will belong
 	e.command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
@@ -105,15 +110,20 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	}
 	go func() {
 		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), false), stdout)
-		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), true), stderr)
 	}()
+	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), true), stderr)
 	e.logger.Debugf("done starting: %v\n", e.ID())
 }
 
-func (e *Executable) restart(ctx context.Context, rec chan output.Message) {
+
+func (e *Executable) kill(ctx context.Context, rec chan output.Message) {
 	if err := syscall.Kill(-e.command.Process.Pid, syscall.SIGKILL); err != nil {
 		e.logger.Errorf("failed to kill process %v: %v\n", e.ID(), err)
 	}
+}
+
+func (e *Executable) restart(ctx context.Context, rec chan output.Message) {
+	e.kill(ctx, rec)
 	rec <- output.Message{ID: e.ID(), Content: "** restarting **"}
 	e.start(ctx, rec)
 }

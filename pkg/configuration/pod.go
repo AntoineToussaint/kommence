@@ -13,6 +13,7 @@ import (
 type Pod struct {
 	Name string
 	Namespace string
+	Container string
 	LocalPort int `yaml:"localPort"`
 	PodPort int `yaml:"podPort"`
 	ID        string
@@ -46,6 +47,7 @@ func (p Pod) ToString() string {
 	return output.FromTemplate(`- {{.ID}}
   name: {{.Name}}
   namespace: {{.Namespace}}
+  {{if .Container}}container: {{.Container}}{{endif}}
   port: {{.LocalPort}} -> {{.PodPort}}
   Description: {{.Description}}
 `, p)

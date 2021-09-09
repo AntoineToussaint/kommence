@@ -141,6 +141,10 @@ func (p *Pod) aggregateLog(ctx context.Context, pod v1.Pod, rec chan output.Mess
 	// Hack it for now
 	// Log
 	args := []string{"kubectl", "logs", pod.Name, "-n", p.config.Namespace, "-f"}
+	// If a container is specified
+	if container := p.config.Container; container != "" {
+		args = append(args, container)
+	}
 	cmd := exec.Command(args[0], args[1:]...)
 	stdout, _ := cmd.StdoutPipe()
 	stderr, _ := cmd.StderrPipe()
@@ -151,8 +155,8 @@ func (p *Pod) aggregateLog(ctx context.Context, pod v1.Pod, rec chan output.Mess
 
 	go func() {
 		_, _ = io.Copy(output.NewLineBreaker(rec, p.ID(), false), stdout)
-		_, _ = io.Copy(output.NewLineBreaker(rec, p.ID(), true), stderr)
 	}()
+	_, _ = io.Copy(output.NewLineBreaker(rec, p.ID(), true), stderr)
 	return nil
 
 }
