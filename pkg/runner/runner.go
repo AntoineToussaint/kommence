@@ -93,12 +93,7 @@ func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 			// Style it
 			style := styles[msg.ID]
 			// Regular message
-			if !msg.IsError {
-				r.Logger.Printf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
-			} else {
-				r.Logger.Errorf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
-
-			}
+			r.Logger.Printf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
 		}
 	}()
 	var wg sync.WaitGroup

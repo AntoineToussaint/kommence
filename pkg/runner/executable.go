@@ -109,9 +109,9 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 		return
 	}
 	go func() {
-		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), false), stdout)
+		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stdout)
 	}()
-	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), true), stderr)
+	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stderr)
 	e.logger.Debugf("done starting: %v\n", e.ID())
 }
 

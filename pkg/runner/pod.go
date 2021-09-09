@@ -102,8 +102,8 @@ func (p *Pod) forward(ctx context.Context, pod v1.Pod, rec chan output.Message) 
 
 	stream := genericclioptions.IOStreams{
 		In:     os.Stdin,
-		Out:    output.NewLineBreaker(rec, p.ID(), false),
-		ErrOut: output.NewLineBreaker(rec, p.ID(), true),
+		Out:    output.NewLineBreaker(rec, p.ID()),
+		ErrOut: output.NewLineBreaker(rec, p.ID()),
 	}
 	//
 	// stop control the port forwarding lifecycle. When it gets closed the
@@ -154,9 +154,9 @@ func (p *Pod) aggregateLog(ctx context.Context, pod v1.Pod, rec chan output.Mess
 	}
 
 	go func() {
-		_, _ = io.Copy(output.NewLineBreaker(rec, p.ID(), false), stdout)
+		_, _ = io.Copy(output.NewLineBreaker(rec, p.ID()), stdout)
 	}()
-	_, _ = io.Copy(output.NewLineBreaker(rec, p.ID(), true), stderr)
+	_, _ = io.Copy(output.NewLineBreaker(rec, p.ID()), stderr)
 	return nil
 
 }
