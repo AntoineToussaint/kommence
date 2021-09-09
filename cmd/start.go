@@ -70,7 +70,7 @@ func executableCompleter(c *configuration.Configuration) Completer {
 	}
 }
 
-func getRuns(ctx context.Context, c *configuration.Configuration) string {
+func getExecutables(ctx context.Context, c *configuration.Configuration) string {
 	return prompt.Input(">>> ", executableCompleter(c),
 		prompt.OptionPrefixTextColor(prompt.Yellow),
 		prompt.OptionPreviewSuggestionTextColor(prompt.Blue),
@@ -84,14 +84,47 @@ func getRuns(ctx context.Context, c *configuration.Configuration) string {
 			}}))
 }
 
+
+func podCompleter(c *configuration.Configuration) Completer {
+	var s []prompt.Suggest
+	for _, e := range c.Pods.Pods {
+		s = append(s, prompt.Suggest{
+			Text:        e.ID,
+			Description: e.Description,
+		})
+	}
+	return func(in prompt.Document) []prompt.Suggest {
+		return prompt.FilterHasPrefix(s, in.GetWordBeforeCursor(), true)
+	}
+}
+
+func getPods(ctx context.Context, c *configuration.Configuration) string {
+	return prompt.Input(">>> ", podCompleter(c),
+		prompt.OptionPrefixTextColor(prompt.Yellow),
+		prompt.OptionPreviewSuggestionTextColor(prompt.Blue),
+		prompt.OptionSelectedSuggestionBGColor(prompt.LightGray),
+		prompt.OptionSuggestionBGColor(prompt.DarkGray),
+		prompt.OptionAddKeyBind(prompt.KeyBind{
+			Key: prompt.ControlC,
+			Fn: func(b *prompt.Buffer) {
+				ctx.Done()
+				os.Exit(0) // log.Fatal doesn't work, but panic somehow avoids this issue...
+			}}))
+}
+
 func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
-	log.Printf("Select executables to run then press Enter:\n")
-	in := getRuns(ctx, c)
-	runs := strings.Split(in, " ")
+	log.Printf("Select executables to run then press Enter:\n", color.Bold)
+	in := getExecutables(ctx, c)
+	execs := strings.Split(in, " ")
+
+	log.Printf("Select pods to forward then press Enter:\n", color.Bold)
+	in = getPods(ctx, c)
+	pods := strings.Split(in, " ")
+	
 	r := runner.New(log, c)
 
 	go func() {
-		err := r.Run(ctx, runner.Configuration{Executables: runs})
+		err := r.Run(ctx, runner.Configuration{Executables: execs, Pods: pods})
 		if err != nil {
 			log.Errorf("can't run")
 		}
