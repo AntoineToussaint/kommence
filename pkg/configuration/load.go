@@ -17,7 +17,7 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 	cfg := Configuration{}
 
 	// Executable configurations
-	execs, err := NewExecutableConfiguration(path.Join(p, "/exec"))
+	execs, err := NewExecutableConfiguration(path.Join(p, "/executables"))
 	if err != nil {
 		return nil, fmt.Errorf("can't load executable configurations: %v", err)
 	}
