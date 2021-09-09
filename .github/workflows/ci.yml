@@ -1,0 +1,7 @@
+name: Unittests
+on: [push]
+jobs:
+  Run-Unittests:
+    runs-on: golang-latest
+    steps:
+      - run: go test ./... --tags=unittest
