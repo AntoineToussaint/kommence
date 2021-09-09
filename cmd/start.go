@@ -16,6 +16,7 @@ import (
 
 var interactive bool
 var execs []string
+var pods []string
 
 // startCmd represents the start command
 var startCmd = &cobra.Command{
@@ -43,7 +44,7 @@ to quickly create a Cobra application.`,
 		if interactive {
 			log.Debugf("starting interactive mode\n")
 			startInteractive(ctx, log, config)
-		} else if len(execs) > 0 {
+		} else if len(execs) > 0 || len(pods) > 0 {
 			log.Debugf("starting runner mode\n")
 			startRunner(ctx, log, config)
 		}
@@ -60,7 +61,7 @@ func executableCompleter(c *configuration.Configuration) Completer {
 	var s []prompt.Suggest
 	for _, e := range c.Execs.Commands {
 		s = append(s, prompt.Suggest{
-			Text:        e.Name,
+			Text:        e.ID,
 			Description: e.Description,
 		})
 	}
@@ -102,7 +103,7 @@ func startRunner(ctx context.Context, log *output.Logger, c *configuration.Confi
 	r := runner.New(log, c)
 
 	go func() {
-		err := r.Run(ctx, runner.Configuration{Executables: execs})
+		err := r.Run(ctx, runner.Configuration{Executables: execs, Pods: pods})
 		if err != nil {
 			log.Errorf("can't run")
 		}
@@ -114,4 +115,5 @@ func init() {
 	rootCmd.AddCommand(startCmd)
 	startCmd.PersistentFlags().BoolVarP(&interactive, "interactive", "i", false, "Interactive mode")
 	startCmd.PersistentFlags().StringSliceVarP(&execs, "execs", "x", nil, "Executables to run")
+	startCmd.PersistentFlags().StringSliceVarP(&pods, "pods", "p", nil, "Pods to forward")
 }

@@ -10,25 +10,30 @@ import (
 	"path/filepath"
 )
 
-type Executable struct {
-	Cmd         string
-	Name        string
+type Pod struct {
+	Name string
+	Namespace string
+	LocalPort int `yaml:"localPort"`
+	PodPort int `yaml:"podPort"`
+	ID        string
 	Shortcut    string
 	Description string
-	Watch       []string
 }
 
-func NewExecutable(f string) (*Executable, error) {
+func NewPod(f string) (*Pod, error) {
 	data, err := ioutil.ReadFile(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't load file: %v", f)
 	}
-	var cfg Executable
+	var cfg Pod
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
 	}
-	if cfg.Cmd == ""{
+	if cfg.Name == ""{
+		return nil, nil
+	}
+	if cfg.Namespace == ""{
 		return nil, nil
 	}
 	if cfg.Description == "" {
@@ -37,19 +42,22 @@ func NewExecutable(f string) (*Executable, error) {
 	return &cfg, nil
 }
 
-func (e Executable) ToString() string {
-	return output.FromTemplate(`- {{.Name}}
-  Command: {{.Cmd}}
+func (p Pod) ToString() string {
+	return output.FromTemplate(`- {{.ID}}
+  name: {{.Name}}
+  namespace: {{.Namespace}}
+  port: {{.LocalPort}} -> {{.PodPort}}
   Description: {{.Description}}
-`, e)
+`, p)
 }
 
-type Executables struct {
-	Commands map[string]*Executable
+type Pods struct {
+	Pods map[string]*Pod
+	Shortcuts map[string]*Pod
 }
 
-func NewExecutableConfiguration(p string) (*Executables, error) {
-	e := Executables{Commands: make(map[string]*Executable)}
+func NewPodConfiguration(p string) (*Pods, error) {
+	config := Pods{Pods: make(map[string]*Pod), Shortcuts: make(map[string]*Pod)}
 	err := filepath.Walk(p,
 		func(p string, info os.FileInfo, err error) error {
 			if err != nil {
@@ -58,28 +66,31 @@ func NewExecutableConfiguration(p string) (*Executables, error) {
 			if info.IsDir() {
 				return nil
 			}
-			c, err := NewExecutable(p)
+			c, err := NewPod(p)
 			if err != nil {
 				return err
 			}
-			e.Commands[c.Name] = c
+			config.Pods[c.ID] = c
 			shortcut := c.Shortcut
 			if shortcut == "" {
 				return nil
 			}
-			if _, ok := e.Commands[shortcut]; ok{
+			if _, ok := config.Shortcuts[shortcut]; ok{
 				return fmt.Errorf("shortcut %v duplicated in executables", shortcut)
 			}
-			e.Commands[shortcut] = c
+			config.Shortcuts[shortcut] = c
 			return nil
 		})
 	if err != nil {
 		return nil, fmt.Errorf("couldn't find executables at: %v", p)
 	}
-	return &e, nil
+	return &config, nil
 }
 
-func (c *Executables) Get(x string) (*Executable, bool) {
-	exec, ok := c.Commands[x]
+func (c *Pods) Get(x string) (*Pod, bool) {
+	exec, ok := c.Pods[x]
+	if !ok {
+		exec, ok = c.Shortcuts[x]
+	}
 	return exec, ok
 }

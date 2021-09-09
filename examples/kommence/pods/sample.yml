@@ -1,0 +1,7 @@
+name: hello-node
+namespace: test
+localPort: 8080
+podPort: 8080
+id: test
+shortcut: t
+description: Sample pod test

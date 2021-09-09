@@ -1,6 +1,6 @@
-cmd: go run examples/main.go
-name: go
-shorcut: g
+id: go
+shortcut: g
 description: Run a go program
+cmd: go run examples/main.go
 watch:
   - examples/main.go

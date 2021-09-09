@@ -15,6 +15,7 @@ type Runner struct {
 
 type Configuration struct {
 	Executables []string
+	Pods []string
 }
 
 type Runnable interface {
@@ -44,6 +45,8 @@ func (p *PaddedID) ID(id string) string {
 
 const tmpl = `{{if .Timestamp}} [{{.Timestamp}}]{{end}}{{if .Level}} [{{.Level}}]{{end}} {{.Parsed}}`
 
+
+
 func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 
 	var starting []Runnable
@@ -57,6 +60,21 @@ func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 			starting = append(starting, exec)
 		}
 	}
+
+	// Load Kubernetes client
+	if len(cfg.Pods) > 0 {
+		r.Logger.Debugf("loading kubernetes client\n")
+		LoadKubeClient()
+	}
+
+	for _, pod := range cfg.Pods {
+		if c, ok := r.Configuration.Pods.Get(pod); ok {
+			exec := NewPod(r.Logger, c)
+			starting = append(starting, exec)
+		}
+	}
+
+	// Figure out padding and styles
 	maxIDLength := 0
 	for _, start := range starting {
 		if l := len(start.ID()); l > maxIDLength {
@@ -74,14 +92,23 @@ func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 			rendered := output.FromTemplate(tmpl, parsed)
 			// Style it
 			style := styles[msg.ID]
-			r.Logger.Printf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
+			// Regular message
+			if !msg.IsError {
+				r.Logger.Printf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
+			} else {
+				r.Logger.Errorf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
+
+			}
 		}
 	}()
 	var wg sync.WaitGroup
 	wg.Add(len(starting))
 	for _, start := range starting {
 		go func(s Runnable) {
-			_ = s.Start(ctx, r.Receiver)
+			err := s.Start(ctx, r.Receiver)
+			if err != nil {
+				r.Logger.Errorf(err.Error() + "\n")
+			}
 			wg.Done()
 		}(start)
 	}

@@ -74,9 +74,8 @@ func (l *Logger) Errorf(s string, args...interface{}) {
 		fmtArgs = append(fmtArgs, arg)
 	}
 	c := color.New(attributes...)
-	msg := c.Sprintf("[FATAL] " + s, fmtArgs...)
+	msg := c.Sprintf("[ERROR] " + s, fmtArgs...)
 	_, _ = l.err.Write([]byte(msg))
-	_, _ = l.err.Write([]byte("\n"))
 }
 
 

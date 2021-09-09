@@ -2,6 +2,7 @@ package runner
 
 import (
 	"context"
+	"fmt"
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
 	"github.com/radovskyb/watcher"
@@ -14,11 +15,12 @@ import (
 )
 
 type Executable struct {
-	Cmd     string
-	Args    []string
+	cmd     string
+	args    []string
+	command *exec.Cmd
+
 	logger  *output.Logger
 	config  *configuration.Executable
-	Command *exec.Cmd
 }
 
 func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable {
@@ -26,18 +28,18 @@ func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable 
 	return &Executable{
 		logger: logger,
 		config: c,
-		Cmd:    args[0],
-		Args:   args[1:],
+		cmd:    args[0],
+		args:   args[1:],
 	}
 }
 
 func (e *Executable) ID() string {
-	return e.config.Name
+	return fmt.Sprintf("⚙️ %v", e.config.ID)
 }
 
 func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
 	// Watcher
-	e.logger.Debugf("creating watcher\n")
+	e.logger.Debugf("creating watcher: %v\n", e.ID())
 	w := e.createWatcher()
 	go func() {
 		for {
@@ -47,7 +49,7 @@ func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
 			case err := <-w.Error:
 				log.Fatalln(err)
 			case <-w.Closed:
-				e.logger.Debugf("watcher closed")
+				e.logger.Debugf("watcher closed: %v", e.ID())
 				return
 			}
 		}
@@ -91,25 +93,25 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 }
 
 func (e *Executable) start(ctx context.Context, rec chan output.Message) {
-	e.Command = exec.CommandContext(ctx, e.Cmd, e.Args...)
+	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
 	// Request the OS to assign process group to the new process, to which all its children will belong
-	e.Command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	e.command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
-	stdout, _ := e.Command.StdoutPipe()
-	stderr, _ := e.Command.StderrPipe()
+	stdout, _ := e.command.StdoutPipe()
+	stderr, _ := e.command.StderrPipe()
 
-	if err := e.Command.Start(); err != nil {
+	if err := e.command.Start(); err != nil {
 		return
 	}
 	go func() {
-		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stdout)
-		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stderr)
+		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), false), stdout)
+		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), true), stderr)
 	}()
 	e.logger.Debugf("done starting: %v\n", e.ID())
 }
 
 func (e *Executable) restart(ctx context.Context, rec chan output.Message) {
-	if err := syscall.Kill(-e.Command.Process.Pid, syscall.SIGKILL); err != nil {
+	if err := syscall.Kill(-e.command.Process.Pid, syscall.SIGKILL); err != nil {
 		e.logger.Errorf("failed to kill process %v: %v\n", e.ID(), err)
 	}
 	rec <- output.Message{ID: e.ID(), Content: "** restarting **"}

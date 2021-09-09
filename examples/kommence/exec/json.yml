@@ -1,6 +1,6 @@
-cmd: ./examples/json.sh
-name: json
-shorcut: j
+id: json
+shortcut: j
 description: Run a counter in JSON
+cmd: ./examples/json.sh
 watch:
   - examples/json.sh

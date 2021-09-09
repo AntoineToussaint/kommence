@@ -34,26 +34,10 @@ to quickly create a Cobra application.`,
 		log := output.NewLogger(debug)
 		config, err := configuration.Load(log, kommenceDir)
 		if err != nil {
-			log.Errorf(err.Error(), color.FgRed, color.Bold)
+			log.Errorf(err.Error() + "\n", color.FgRed, color.Bold)
 			os.Exit(1)
 		}
 		config.Print(log)
-	//	in := prompt.Input(">>> ", completer,
-	//		prompt.OptionTitle("sql-prompt"),
-	//		prompt.OptionHistory([]string{"SELECT * FROM users;"}),
-	//		prompt.OptionPrefixTextColor(prompt.Yellow),
-	//		prompt.OptionPreviewSuggestionTextColor(prompt.Blue),
-	//		prompt.OptionSelectedSuggestionBGColor(prompt.LightGray),
-	//		prompt.OptionSuggestionBGColor(prompt.DarkGray))
-	//	fmt.Println("Your input: " + in)
-	//	in = prompt.Input(">>> ", completer,
-	//		prompt.OptionTitle("sql-prompt"),
-	//		prompt.OptionHistory([]string{"SELECT * FROM users;"}),
-	//		prompt.OptionPrefixTextColor(prompt.Yellow),
-	//		prompt.OptionPreviewSuggestionTextColor(prompt.Blue),
-	//		prompt.OptionSelectedSuggestionBGColor(prompt.LightGray),
-	//		prompt.OptionSuggestionBGColor(prompt.DarkGray))
-	//	fmt.Println("Your input: " + in)
 	},
 
 }
