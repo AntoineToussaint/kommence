@@ -3,15 +3,16 @@ package runner
 import (
 	"context"
 	"fmt"
-	"github.com/antoinetoussaint/kommence/pkg/configuration"
-	"github.com/antoinetoussaint/kommence/pkg/output"
-	"github.com/radovskyb/watcher"
 	"io"
 	"log"
 	"os/exec"
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/antoinetoussaint/kommence/pkg/configuration"
+	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/radovskyb/watcher"
 )
 
 type Executable struct {
@@ -19,8 +20,8 @@ type Executable struct {
 	args    []string
 	command *exec.Cmd
 
-	logger  *output.Logger
-	config  *configuration.Executable
+	logger *output.Logger
+	config *configuration.Executable
 }
 
 func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable {
@@ -97,8 +98,9 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 }
 
 func (e *Executable) start(ctx context.Context, rec chan output.Message) {
+	// TODO Error handling
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
-	
+
 	// Request the OS to assign process group to the new process, to which all its children will belong
 	e.command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
@@ -106,6 +108,7 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	stderr, _ := e.command.StderrPipe()
 
 	if err := e.command.Start(); err != nil {
+		e.logger.Errorf("can't start: %v", err)
 		return
 	}
 	go func() {
@@ -114,7 +117,6 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stderr)
 	e.logger.Debugf("done starting: %v\n", e.ID())
 }
-
 
 func (e *Executable) kill(ctx context.Context, rec chan output.Message) {
 	if err := syscall.Kill(-e.command.Process.Pid, syscall.SIGKILL); err != nil {

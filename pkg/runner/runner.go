@@ -2,20 +2,21 @@ package runner
 
 import (
 	"context"
+	"sync"
+
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
-	"sync"
 )
 
 type Runner struct {
-	Receiver chan output.Message
+	Receiver      chan output.Message
 	Configuration *configuration.Configuration
 	Logger        *output.Logger
 }
 
 type Configuration struct {
 	Executables []string
-	Pods []string
+	Pods        []string
 }
 
 type Runnable interface {
@@ -25,9 +26,9 @@ type Runnable interface {
 
 func New(log *output.Logger, c *configuration.Configuration) Runner {
 	return Runner{
-		Logger: log,
+		Logger:        log,
 		Configuration: c,
-		Receiver: make(chan output.Message),
+		Receiver:      make(chan output.Message),
 	}
 }
 
@@ -37,15 +38,13 @@ type PaddedID struct {
 
 func (p *PaddedID) ID(id string) string {
 	padding := ""
-	for i := 0; i < p.Length - len(id); i++ {
+	for i := 0; i < p.Length-len(id); i++ {
 		padding += " "
 	}
 	return id + padding
 }
 
 const tmpl = `{{if .Timestamp}} [{{.Timestamp}}]{{end}}{{if .Level}} [{{.Level}}]{{end}} {{.Parsed}}`
-
-
 
 func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 
@@ -89,11 +88,11 @@ func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 			// Parse message
 			parsed := output.ParseToStructured(msg.Content)
 			// Render it
-			rendered := output.FromTemplate(tmpl, parsed)
+			rendered := output.FromTemplate(r.Logger, tmpl, parsed)
 			// Style it
 			style := styles[msg.ID]
 			// Regular message
-			r.Logger.Printf(padding.ID(msg.ID) + " >" + rendered + "\n", style...)
+			r.Logger.Printf(padding.ID(msg.ID)+" >"+rendered+"\n", style...)
 		}
 	}()
 	var wg sync.WaitGroup
@@ -110,4 +109,3 @@ func (r *Runner) Run(ctx context.Context, cfg Configuration) error {
 	wg.Wait()
 	return nil
 }
-

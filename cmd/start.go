@@ -2,17 +2,18 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
 	"github.com/antoinetoussaint/kommence/pkg/runner"
 	"github.com/c-bata/go-prompt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-	"time"
 )
 
 var interactive bool
@@ -88,7 +89,6 @@ func getExecutables(ctx context.Context, c *configuration.Configuration) string 
 			}}))
 }
 
-
 func podCompleter(c *configuration.Configuration) Completer {
 	var s []prompt.Suggest
 	for _, e := range c.Pods.Pods {
@@ -118,13 +118,20 @@ func getPods(ctx context.Context, c *configuration.Configuration) string {
 
 func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
 	log.Printf("Select executables to run then press Enter:\n", color.Bold)
+	// TODO FIX checkon inputs
+	var execs []string
 	in := getExecutables(ctx, c)
-	execs := strings.Split(in, " ")
+	if in != "" {
+		execs = strings.Split(in, " ")
+	}
 
 	log.Printf("Select pods to forward then press Enter:\n", color.Bold)
 	in = getPods(ctx, c)
-	pods := strings.Split(in, " ")
-	
+	var pods []string
+	if in != "" {
+		pods = strings.Split(in, " ")
+	}
+
 	r := runner.New(log, c)
 
 	go func() {
