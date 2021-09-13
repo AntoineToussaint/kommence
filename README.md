@@ -11,5 +11,5 @@ go run kommence.go start -x json,counter --config=examples/kommence -d
 Interactive mode
 
 ```shell
-go run kommence.go start -i --config=examples/kommence -d
+go run kommence.go start -X --config=examples/kommence -d
 ```

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/araddon/dateparse"
+	"sort"
 	"strings"
 	"time"
 )
@@ -66,6 +67,9 @@ func ParseToStructured(l string) StructuredLog {
 	for k, v := range data {
 		msgs = append(msgs, fmt.Sprintf("%v=%v", k, v))
 	}
+	sort.Slice(msgs, func(i int, j int) bool {
+		return msgs[i] < msgs[j]
+	})
 	s.Parsed = strings.Join(msgs, " ")
 	return s
 }
