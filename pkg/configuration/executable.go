@@ -2,19 +2,20 @@ package configuration
 
 import (
 	"fmt"
-	"github.com/antoinetoussaint/kommence/pkg/output"
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
 
 type Executable struct {
-	Cmd         string
 	ID          string
 	Shortcut    string
 	Description string
+	Cmd         string
 	Watch       []string
 }
 
@@ -28,10 +29,10 @@ func NewExecutable(f string) (*Executable, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
 	}
-	if cfg.ID == ""{
+	if cfg.ID == "" {
 		return nil, fmt.Errorf("ID required")
 	}
-	if cfg.Cmd == ""{
+	if cfg.Cmd == "" {
 		return nil, fmt.Errorf("command required")
 	}
 	if cfg.Description == "" {
@@ -40,15 +41,15 @@ func NewExecutable(f string) (*Executable, error) {
 	return &cfg, nil
 }
 
-func (e Executable) ToString() string {
-	return output.FromTemplate(`- {{.ID}}
+func (e *Executable) ToString(log *output.Logger) string {
+	return output.FromTemplate(log, `- {{.ID}}
   command: {{.Cmd}}
   Description: {{.Description}}
 `, e)
 }
 
 type Executables struct {
-	Commands map[string]*Executable
+	Commands  map[string]*Executable
 	Shortcuts map[string]*Executable
 }
 
@@ -71,7 +72,7 @@ func NewExecutableConfiguration(p string) (*Executables, error) {
 			if shortcut == "" {
 				return nil
 			}
-			if _, ok := config.Shortcuts[shortcut]; ok{
+			if _, ok := config.Shortcuts[shortcut]; ok {
 				return fmt.Errorf("shortcut %v duplicated in executables", shortcut)
 			}
 			config.Shortcuts[shortcut] = c

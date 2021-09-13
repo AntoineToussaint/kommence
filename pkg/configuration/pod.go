@@ -2,23 +2,24 @@ package configuration
 
 import (
 	"fmt"
-	"github.com/antoinetoussaint/kommence/pkg/output"
-	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+
+	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/pkg/errors"
+	"gopkg.in/yaml.v3"
 )
 
 type Pod struct {
-	Name string
-	Namespace string
-	Container string
-	LocalPort int `yaml:"localPort"`
-	PodPort int `yaml:"podPort"`
-	ID        string
+	ID          string
 	Shortcut    string
 	Description string
+	Name        string
+	Namespace   string
+	Container   string
+	LocalPort   int `yaml:"localPort"`
+	PodPort     int `yaml:"podPort"`
 }
 
 func NewPod(f string) (*Pod, error) {
@@ -31,10 +32,10 @@ func NewPod(f string) (*Pod, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
 	}
-	if cfg.Name == ""{
+	if cfg.Name == "" {
 		return nil, nil
 	}
-	if cfg.Namespace == ""{
+	if cfg.Namespace == "" {
 		return nil, nil
 	}
 	if cfg.Description == "" {
@@ -43,18 +44,18 @@ func NewPod(f string) (*Pod, error) {
 	return &cfg, nil
 }
 
-func (p Pod) ToString() string {
-	return output.FromTemplate(`- {{.ID}}
+func (p Pod) ToString(log *output.Logger) string {
+	return output.FromTemplate(log, `- {{.ID}}
   name: {{.Name}}
   namespace: {{.Namespace}}
-  {{if .Container}}container: {{.Container}}{{endif}}
+  {{if .Container}}container: {{.Container}}{{end}}
   port: {{.LocalPort}} -> {{.PodPort}}
   Description: {{.Description}}
 `, p)
 }
 
 type Pods struct {
-	Pods map[string]*Pod
+	Pods      map[string]*Pod
 	Shortcuts map[string]*Pod
 }
 
@@ -77,7 +78,7 @@ func NewPodConfiguration(p string) (*Pods, error) {
 			if shortcut == "" {
 				return nil
 			}
-			if _, ok := config.Shortcuts[shortcut]; ok{
+			if _, ok := config.Shortcuts[shortcut]; ok {
 				return fmt.Errorf("shortcut %v duplicated in executables", shortcut)
 			}
 			config.Shortcuts[shortcut] = c
