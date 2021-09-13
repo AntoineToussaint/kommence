@@ -2,13 +2,13 @@ package configuration
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
 	"github.com/antoinetoussaint/kommence/pkg/output"
 	"github.com/pkg/errors"
-	"gopkg.in/yaml.v3"
 )
 
 type Executable struct {
@@ -16,6 +16,7 @@ type Executable struct {
 	Shortcut    string
 	Description string
 	Cmd         string
+	Env         map[string]string
 	Watch       []string
 }
 

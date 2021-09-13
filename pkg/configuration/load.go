@@ -3,6 +3,7 @@ package configuration
 import (
 	"fmt"
 	"path"
+	"strings"
 
 	"github.com/antoinetoussaint/kommence/pkg/output"
 	"github.com/fatih/color"
@@ -33,6 +34,64 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 	logger.Debugf("loaded %v pod configurations\n", len(pods.Pods))
 
 	return &cfg, nil
+}
+
+func (c *Configuration) ListExecutables() []string {
+	if len(c.Execs.Commands) == 0 {
+		return nil
+	}
+	var execs []string
+	for _, exec := range c.Execs.Commands {
+		s := exec.ID
+		if shortcut := exec.Shortcut; shortcut != "" {
+			s = fmt.Sprintf("%v|%v", s, shortcut)
+		}
+		execs = append(execs, s)
+	}
+	return execs
+}
+
+
+func (c *Configuration) ValidExecutables(execs []string) (bool, string) {
+	var unknowns []string
+	for _, exec := range execs {
+		if _, ok := c.Execs.Get(exec); !ok {
+			unknowns = append(unknowns, exec)
+		}
+	}
+	if len(unknowns) > 0 {
+		return false, "Unknown executables " + strings.Join(unknowns, ", ")
+	}
+	return true, ""
+}
+
+func (c *Configuration) ListPods() []string {
+	if len(c.Pods.Pods) == 0 {
+		return nil
+	}
+	var pods []string
+	for _, pod := range c.Pods.Pods {
+		s := pod.ID
+		if shortcut := pod.Shortcut; shortcut != "" {
+			s = fmt.Sprintf("%v|%v", s, shortcut)
+		}
+		pods = append(pods, s)
+	}
+	return pods
+}
+
+
+func (c *Configuration) ValidPods(pods []string) (bool, string) {
+	var unknowns []string
+	for _, pod := range pods {
+		if _, ok := c.Pods.Get(pod); !ok {
+			unknowns = append(unknowns, pod)
+		}
+	}
+	if len(unknowns) > 0 {
+		return false, "Unknown pods " + strings.Join(unknowns, ", ")
+	}
+	return true, ""
 }
 
 func (c *Configuration) Print(logger *output.Logger) {

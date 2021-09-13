@@ -9,6 +9,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"os"
 
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
@@ -100,6 +101,10 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	// TODO Error handling
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
+	e.command.Env = os.Environ()
+	for k, v := range e.config.Env {
+		e.command.Env = append(e.command.Env, fmt.Sprintf("%s=%s", k, v))
+	}
 
 	// Request the OS to assign process group to the new process, to which all its children will belong
 	e.command.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}

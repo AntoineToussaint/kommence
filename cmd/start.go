@@ -69,6 +69,12 @@ func executableCompleter(c *configuration.Configuration) Completer {
 			Text:        e.ID,
 			Description: e.Description,
 		})
+		if e.Shortcut != "" {
+			s = append(s, prompt.Suggest{
+				Text:        e.Shortcut,
+				Description: e.Description,
+			})
+		}
 	}
 	return func(in prompt.Document) []prompt.Suggest {
 		return prompt.FilterHasPrefix(s, in.GetWordBeforeCursor(), true)
@@ -118,18 +124,41 @@ func getPods(ctx context.Context, c *configuration.Configuration) string {
 
 func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
 	log.Printf("Select executables to run then press Enter:\n", color.Bold)
-	// TODO FIX checkon inputs
+	
 	var execs []string
-	in := getExecutables(ctx, c)
-	if in != "" {
-		execs = strings.Split(in, " ")
+	valid := false
+	msg := ""
+	for !valid {
+		log.Printf("Available: %v\n", strings.Join(c.ListExecutables(), ", "), color.Bold)
+		in := getExecutables(ctx, c)
+		if in == "" {
+			valid = true
+		} else {
+			execs = strings.Split(in, " ")
+			valid, msg = c.ValidExecutables(execs)
+			if !valid {
+				log.Printf(msg + "\n", color.Bold)
+			}
+		}
 	}
 
 	log.Printf("Select pods to forward then press Enter:\n", color.Bold)
-	in = getPods(ctx, c)
+	
 	var pods []string
-	if in != "" {
-		pods = strings.Split(in, " ")
+	valid = false
+	msg = ""
+	for !valid {
+		log.Printf("Available: %v\n", strings.Join(c.ListPods(), ", "), color.Bold)
+		in := getPods(ctx, c)
+		if in == "" {
+			valid = true
+		} else {
+			pods = strings.Split(in, " ")
+			valid, msg = c.ValidPods(execs)
+			if !valid {
+				log.Printf(msg + "\n", color.Bold)
+			}
+		}
 	}
 
 	r := runner.New(log, c)
