@@ -64,12 +64,12 @@ to quickly create a Cobra application.`,
 		for {
 			select {
 			case <-cancel:
-				log.Printf("\nStopping kommence.\n", color.Bold)
+				log.Printf("Stopping kommence.\n", color.Bold)
 				r.Stop(ctx)
 				os.Exit(0)
 
 			case <-ctx.Done():
-				log.Printf("\nStopping kommence.\n", color.Bold)
+				log.Printf("Stopping kommence.\n", color.Bold)
 				r.Stop(ctx)
 				os.Exit(0)
 			}
