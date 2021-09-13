@@ -51,9 +51,8 @@ func (p *PaddedID) ID(id string) string {
 
 const tmpl = `{{if .Timestamp}} [{{.Timestamp}}]{{end}}{{if .Level}} [{{.Level}}]{{end}} {{.Parsed}}`
 
+
 func (r *Runner) Run(ctx context.Context, cfg *Configuration) error {
-
-
 	var styler output.Styler
 	styles := make(map[string]output.Style)
 

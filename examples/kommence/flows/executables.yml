@@ -1,0 +1,7 @@
+id: executables
+description: Only executables
+executables:
+  - counter
+  - error
+  - go
+  - json

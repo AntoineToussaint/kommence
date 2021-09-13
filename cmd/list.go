@@ -3,22 +3,11 @@ package cmd
 import (
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
-	"github.com/c-bata/go-prompt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 )
 
-
-func completer(in prompt.Document) []prompt.Suggest {
-	s := []prompt.Suggest{
-		{Text: "users", Description: "Store the username and age"},
-		{Text: "articles", Description: "Store the article text posted by user"},
-		{Text: "comments", Description: "Store the text commented to articles"},
-		{Text: "groups", Description: "Combine users with specific rules"},
-	}
-	return prompt.FilterHasPrefix(s, in.GetWordBeforeCursor(), true)
-}
 
 // listCmd represents the list command
 var listCmd = &cobra.Command{

@@ -12,6 +12,7 @@ import (
 type Configuration struct {
 	Execs *Executables
 	Pods  *Pods
+	Flows *Flows
 }
 
 func Load(logger *output.Logger, p string) (*Configuration, error) {
@@ -32,6 +33,14 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 	}
 	cfg.Pods = pods
 	logger.Debugf("loaded %v pod configurations\n", len(pods.Pods))
+
+	// Flows configurations
+	flows, err := NewFlowConfiguration(path.Join(p, "/flows"))
+	if err != nil {
+		return nil, fmt.Errorf("can't load flows configurations: %v", err)
+	}
+	cfg.Flows = flows
+	logger.Debugf("loaded %v flow configurations\n", len(flows.Flows))
 
 	return &cfg, nil
 }
@@ -94,6 +103,38 @@ func (c *Configuration) ValidPods(pods []string) (bool, string) {
 	return true, ""
 }
 
+
+func (c *Configuration) ListFlows() []string {
+	if len(c.Flows.Flows) == 0 {
+		return nil
+	}
+	var flows []string
+	for _, flow := range c.Flows.Flows {
+		s := flow.ID
+		if shortcut := flow.Shortcut; shortcut != "" {
+			s = fmt.Sprintf("%v|%v", s, shortcut)
+		}
+		flows = append(flows, s)
+	}
+	return flows
+}
+
+
+func (c *Configuration) ValidFlows(flows []string) (bool, string) {
+	var unknowns []string
+	for _, flow := range flows {
+		if _, ok := c.Flows.Get(flow); !ok {
+			unknowns = append(unknowns, flow)
+		}
+	}
+	if len(unknowns) > 0 {
+		return false, "Unknown flows " + strings.Join(unknowns, ", ")
+	}
+	return true, ""
+}
+
+
+
 func (c *Configuration) Print(logger *output.Logger) {
 	logger.Printf("Configured with %v executables:\n", len(c.Execs.Commands), color.Bold)
 	for _, exec := range c.Execs.Commands {
@@ -101,7 +142,10 @@ func (c *Configuration) Print(logger *output.Logger) {
 	}
 	logger.Printf("Configured with %v pods:\n", len(c.Pods.Pods), color.Bold)
 	for _, pod := range c.Pods.Pods {
-		fmt.Println(pod)
 		logger.Printf(pod.ToString(logger))
+	}
+	logger.Printf("Configured with %v flows:\n", len(c.Flows.Flows), color.Bold)
+	for _, flow := range c.Flows.Flows {
+		logger.Printf(flow.ToString(logger))
 	}
 }
