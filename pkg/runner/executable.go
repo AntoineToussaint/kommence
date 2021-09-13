@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"syscall"
 	"time"
-	"os"
 
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
@@ -24,6 +24,7 @@ type Executable struct {
 	logger *output.Logger
 	config *configuration.Executable
 }
+
 
 func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable {
 	args := strings.Split(c.Cmd, " ")
@@ -48,10 +49,6 @@ func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
 			select {
 			case <-w.Event:
 				go e.restart(ctx, rec)
-			case <-ctx.Done():
-				e.logger.Debugf("killing process: %v\n", e.ID())
-				e.kill(ctx, rec)
-				return
 			case err := <-w.Error:
 				log.Fatalln(err)
 			case <-w.Closed:
@@ -60,8 +57,11 @@ func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
 			}
 		}
 	}()
-	e.start(ctx, rec)
-	return nil
+	return e.start(ctx, rec)
+}
+
+func (e *Executable) Stop(ctx context.Context, rec chan output.Message) error {
+	return e.kill(ctx, rec)
 }
 
 func (e *Executable) createWatcher() *watcher.Watcher {
@@ -98,8 +98,7 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 	return w
 }
 
-func (e *Executable) start(ctx context.Context, rec chan output.Message) {
-	// TODO Error handling
+func (e *Executable) start(ctx context.Context, rec chan output.Message) error {
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
 	e.command.Env = os.Environ()
 	for k, v := range e.config.Env {
@@ -113,20 +112,25 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	stderr, _ := e.command.StderrPipe()
 
 	if err := e.command.Start(); err != nil {
-		e.logger.Errorf("can't start: %v", err)
-		return
+		e.logger.Errorf("can't start %v: %v", e.ID(), err)
+		return err
 	}
 	go func() {
 		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stdout)
 	}()
 	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stderr)
-	e.logger.Debugf("done starting: %v\n", e.ID())
+	return nil
 }
 
-func (e *Executable) kill(ctx context.Context, rec chan output.Message) {
+func (e *Executable) kill(ctx context.Context, rec chan output.Message) error {
+	if e.command.Process == nil {
+		return nil
+	}
 	if err := syscall.Kill(-e.command.Process.Pid, syscall.SIGKILL); err != nil {
 		e.logger.Errorf("failed to kill process %v: %v\n", e.ID(), err)
+		return err
 	}
+	return nil
 }
 
 func (e *Executable) restart(ctx context.Context, rec chan output.Message) {

@@ -98,6 +98,10 @@ func (p *Pod) Start(ctx context.Context, rec chan output.Message) error {
 	return nil
 }
 
+func (p *Pod) Stop(ctx context.Context, rec chan output.Message) error {
+	return nil
+}
+
 func (p *Pod) forward(ctx context.Context, pod v1.Pod, rec chan output.Message) error {
 
 	stream := genericclioptions.IOStreams{

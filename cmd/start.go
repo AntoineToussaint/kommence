@@ -2,18 +2,16 @@ package cmd
 
 import (
 	"context"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-	"time"
-
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
 	"github.com/antoinetoussaint/kommence/pkg/runner"
 	"github.com/c-bata/go-prompt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
 )
 
 var interactive bool
@@ -35,6 +33,7 @@ to quickly create a Cobra application.`,
 		signal.Notify(cancel, os.Interrupt, syscall.SIGTERM)
 		ctx := context.Background()
 		ctx, stop := context.WithCancel(ctx)
+
 		log := output.NewLogger(debug)
 
 		log.Debugf("starting in debug mode\n")
@@ -44,19 +43,38 @@ to quickly create a Cobra application.`,
 			os.Exit(1)
 		}
 
+		var r *runner.Runner
+		var c *runner.Configuration
+
 		if interactive {
 			log.Debugf("starting interactive mode\n")
-			startInteractive(ctx, log, config)
+			r, c = startInteractive(ctx, log, config)
 		} else if len(execs) > 0 || len(pods) > 0 {
 			log.Debugf("starting runner mode\n")
-			startRunner(ctx, log, config)
+			r, c = startRunner(ctx, log, config)
 		}
 
-		<-cancel
-		stop()
-		log.Printf("\nStopping all running processes.\n", color.Bold)
-		time.Sleep(time.Second)
-		os.Exit(0)
+		go func() {
+			log.Debugf("starting runner\n")
+			r.Run(ctx, c)
+			// Stop when we are done
+			stop()
+		}()
+
+		for {
+			select {
+			case <-cancel:
+				log.Printf("\nStopping kommence.\n", color.Bold)
+				r.Stop(ctx)
+				os.Exit(0)
+
+			case <-ctx.Done():
+				log.Printf("\nStopping kommence.\n", color.Bold)
+				r.Stop(ctx)
+				os.Exit(0)
+			}
+		}
+
 	},
 }
 
@@ -122,9 +140,9 @@ func getPods(ctx context.Context, c *configuration.Configuration) string {
 			}}))
 }
 
-func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
+func startInteractiveExecutables(ctx context.Context, log *output.Logger, c *configuration.Configuration) []string {
 	log.Printf("Select executables to run then press Enter:\n", color.Bold)
-	
+
 	var execs []string
 	valid := false
 	msg := ""
@@ -137,16 +155,20 @@ func startInteractive(ctx context.Context, log *output.Logger, c *configuration.
 			execs = strings.Split(in, " ")
 			valid, msg = c.ValidExecutables(execs)
 			if !valid {
-				log.Printf(msg + "\n", color.Bold)
+				log.Printf(msg+"\n", color.Bold)
 			}
 		}
 	}
+	return execs
+}
+
+func startInteractivePods(ctx context.Context, log *output.Logger, c *configuration.Configuration) []string {
 
 	log.Printf("Select pods to forward then press Enter:\n", color.Bold)
-	
+
 	var pods []string
-	valid = false
-	msg = ""
+	valid := false
+	msg := ""
 	for !valid {
 		log.Printf("Available: %v\n", strings.Join(c.ListPods(), ", "), color.Bold)
 		in := getPods(ctx, c)
@@ -154,34 +176,33 @@ func startInteractive(ctx context.Context, log *output.Logger, c *configuration.
 			valid = true
 		} else {
 			pods = strings.Split(in, " ")
-			valid, msg = c.ValidPods(execs)
+			valid, msg = c.ValidPods(pods)
 			if !valid {
-				log.Printf(msg + "\n", color.Bold)
+				log.Printf(msg+"\n", color.Bold)
 			}
 		}
 	}
+	return pods
+}
+
+func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) (*runner.Runner, *runner.Configuration) {
+	var execs []string
+	var pods []string
+	if len(c.ListExecutables()) > 0 {
+		execs = startInteractiveExecutables(ctx, log, c)
+	}
+	if len(c.ListPods()) > 0 {
+		execs = startInteractivePods(ctx, log, c)
+	}
 
 	r := runner.New(log, c)
-
-	go func() {
-		err := r.Run(ctx, runner.Configuration{Executables: execs, Pods: pods})
-		if err != nil {
-			log.Errorf("can't run")
-		}
-	}()
+	return r, &runner.Configuration{Executables: execs, Pods: pods}
 
 }
 
-func startRunner(ctx context.Context, log *output.Logger, c *configuration.Configuration) {
+func startRunner(ctx context.Context, log *output.Logger, c *configuration.Configuration) (*runner.Runner, *runner.Configuration) {
 	r := runner.New(log, c)
-
-	go func() {
-		err := r.Run(ctx, runner.Configuration{Executables: execs, Pods: pods})
-		if err != nil {
-			log.Errorf("can't run")
-		}
-	}()
-
+	return r, &runner.Configuration{Executables: execs, Pods: pods}
 }
 
 func init() {
