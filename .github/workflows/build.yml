@@ -1,3 +1,4 @@
+name: ReleaseBuild
 on:
   release:
     types: [created]
