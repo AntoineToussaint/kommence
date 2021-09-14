@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -12,16 +14,15 @@ var debug bool
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "kommence",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Start multiple tasks: executables, pod forwarding, flows",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	//	Executables: func(cmd *cobra.command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		log := output.NewLogger(debug)
+		log.Printf("Welcome to kommence!\n", color.Bold)
+		log.Printf("To get started, run: ")
+		log.Printf(" kommence init\n", color.Bold)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

@@ -59,9 +59,14 @@ type Pods struct {
 	Shortcuts map[string]*Pod
 }
 
-func NewPodConfiguration(p string) (*Pods, error) {
+func NewPodConfiguration(log *output.Logger, p string) (*Pods, error) {
 	config := Pods{Pods: make(map[string]*Pod), Shortcuts: make(map[string]*Pod)}
-	err := filepath.Walk(p,
+	dir, err := os.Stat(p)
+	if err != nil || !dir.IsDir() {
+		log.Debugf("Pods folder not found in kommence config")
+		return &config, nil
+	}
+	err = filepath.Walk(p,
 		func(p string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err

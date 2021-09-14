@@ -45,6 +45,9 @@ var startCmd = &cobra.Command{
 		} else if len(execs) > 0 || len(pods) > 0 || len(flows) > 0 {
 			log.Debugf("starting command line mode\n")
 			r, c = startCommandLine(ctx, log, config)
+		} else {
+			log.Printf("Please specify executables, pods or flows or run in interactive mode.\n")
+			os.Exit(0)
 		}
 		log.Debugf("using runner configuration: %v", c)
 		go func() {
@@ -157,7 +160,7 @@ func getFlows(ctx context.Context, c *configuration.Configuration) string {
 			Key: prompt.ControlC,
 			Fn: func(b *prompt.Buffer) {
 				ctx.Done()
-				os.Exit(0) // log.Fatal doesn't work, but panic somehow avoids this issue...
+				os.Exit(0)
 			}}))
 }
 

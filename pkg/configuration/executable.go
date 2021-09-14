@@ -59,9 +59,14 @@ type Executables struct {
 }
 
 // NewExecutableConfiguration loads Executables configuration.
-func NewExecutableConfiguration(p string) (*Executables, error) {
+func NewExecutableConfiguration(log *output.Logger, p string) (*Executables, error) {
 	config := Executables{Commands: make(map[string]*Executable), Shortcuts: make(map[string]*Executable)}
-	err := filepath.Walk(p,
+	dir, err := os.Stat(p)
+	if err != nil || !dir.IsDir() {
+		log.Debugf("Executables folder not found in kommence config")
+		return &config, nil
+	}
+	err = filepath.Walk(p,
 		func(p string, info os.FileInfo, err error) error {
 			if err != nil {
 				return err

@@ -19,7 +19,7 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 	cfg := Configuration{}
 
 	// Executable configurations
-	execs, err := NewExecutableConfiguration(path.Join(p, "/executables"))
+	execs, err := NewExecutableConfiguration(logger, path.Join(p, "/executables"))
 	if err != nil {
 		return nil, fmt.Errorf("can't load executable configurations: %v", err)
 	}
@@ -27,7 +27,7 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 	logger.Debugf("loaded %v executable configurations\n", len(execs.Commands))
 
 	// Pod configurations
-	pods, err := NewPodConfiguration(path.Join(p, "/pods"))
+	pods, err := NewPodConfiguration(logger, path.Join(p, "/pods"))
 	if err != nil {
 		return nil, fmt.Errorf("can't load pods configurations: %v", err)
 	}
@@ -35,7 +35,7 @@ func Load(logger *output.Logger, p string) (*Configuration, error) {
 	logger.Debugf("loaded %v pod configurations\n", len(pods.Pods))
 
 	// Flows configurations
-	flows, err := NewFlowConfiguration(path.Join(p, "/flows"))
+	flows, err := NewFlowConfiguration(logger, path.Join(p, "/flows"))
 	if err != nil {
 		return nil, fmt.Errorf("can't load flows configurations: %v", err)
 	}
