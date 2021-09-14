@@ -18,7 +18,7 @@ type Runner struct {
 	tasks         []Runnable
 }
 
-type Configuration struct {
+type Runtime struct {
 	Executables []string
 	Pods        []string
 }
@@ -51,8 +51,7 @@ func (p *PaddedID) ID(id string) string {
 
 const tmpl = `{{if .Timestamp}} [{{.Timestamp}}]{{end}}{{if .Level}} [{{.Level}}]{{end}} {{.Parsed}}`
 
-
-func (r *Runner) Run(ctx context.Context, cfg *Configuration) error {
+func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 	var styler output.Styler
 	styles := make(map[string]output.Style)
 

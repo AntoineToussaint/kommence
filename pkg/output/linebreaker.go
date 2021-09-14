@@ -17,7 +17,7 @@ func NewLineBreaker(out chan Message, ID string) *LineBreaker {
 
 func (w *LineBreaker) Write(p []byte) (int, error) {
 	total := 0
-	for _ , c := range p {
+	for _, c := range p {
 		total++
 		if c == '\n' {
 			w.Output <- Message{ID: w.ID, Content: string(w.currentLine)}

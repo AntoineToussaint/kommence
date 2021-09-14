@@ -22,8 +22,8 @@ func WithOut(out io.Writer) LoggerOption {
 
 func NewLogger(debug bool, opts ...LoggerOption) *Logger {
 	logger := &Logger{
-		out: os.Stdout,
-		err: os.Stderr,
+		out:   os.Stdout,
+		err:   os.Stderr,
 		debug: debug,
 	}
 	for _, opt := range opts {
@@ -32,7 +32,7 @@ func NewLogger(debug bool, opts ...LoggerOption) *Logger {
 	return logger
 }
 
-func (l *Logger) Printf(s string, args...interface{}) {
+func (l *Logger) Printf(s string, args ...interface{}) {
 	var attributes []color.Attribute
 	var fmtArgs []interface{}
 	for _, arg := range args {
@@ -47,7 +47,7 @@ func (l *Logger) Printf(s string, args...interface{}) {
 	_, _ = l.out.Write([]byte(msg))
 }
 
-func (l *Logger) Debugf(s string, args...interface{}) {
+func (l *Logger) Debugf(s string, args ...interface{}) {
 	if l.debug {
 		var attributes []color.Attribute
 		var fmtArgs []interface{}
@@ -59,11 +59,11 @@ func (l *Logger) Debugf(s string, args...interface{}) {
 			fmtArgs = append(fmtArgs, arg)
 		}
 		c := color.New(attributes...)
-		msg := c.Sprintf("[DEBUG] " + s, fmtArgs...)
+		msg := c.Sprintf("[DEBUG] "+s, fmtArgs...)
 		_, _ = l.out.Write([]byte(msg))
 	}
 }
-func (l *Logger) Errorf(s string, args...interface{}) {
+func (l *Logger) Errorf(s string, args ...interface{}) {
 	var attributes []color.Attribute
 	var fmtArgs []interface{}
 	for _, arg := range args {
@@ -74,8 +74,6 @@ func (l *Logger) Errorf(s string, args...interface{}) {
 		fmtArgs = append(fmtArgs, arg)
 	}
 	c := color.New(attributes...)
-	msg := c.Sprintf("[ERROR] " + s, fmtArgs...)
+	msg := c.Sprintf("[ERROR] "+s, fmtArgs...)
 	_, _ = l.err.Write([]byte(msg))
 }
-
-

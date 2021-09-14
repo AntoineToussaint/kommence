@@ -13,7 +13,6 @@ func TestParseToStructured(t *testing.T) {
 	assert.Equal(t, "12:41:25", s.Timestamp)
 	assert.Equal(t, "msg=test", s.Parsed)
 
-
 	l = `{"i": "0", "time": "2021-09-08 15:24:21", "level": "info"}`
 	s = output.ParseToStructured(l)
 	assert.Equal(t, "INFO", s.Level)

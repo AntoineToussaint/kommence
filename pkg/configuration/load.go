@@ -60,7 +60,6 @@ func (c *Configuration) ListExecutables() []string {
 	return execs
 }
 
-
 func (c *Configuration) ValidExecutables(execs []string) (bool, string) {
 	var unknowns []string
 	for _, exec := range execs {
@@ -89,7 +88,6 @@ func (c *Configuration) ListPods() []string {
 	return pods
 }
 
-
 func (c *Configuration) ValidPods(pods []string) (bool, string) {
 	var unknowns []string
 	for _, pod := range pods {
@@ -102,7 +100,6 @@ func (c *Configuration) ValidPods(pods []string) (bool, string) {
 	}
 	return true, ""
 }
-
 
 func (c *Configuration) ListFlows() []string {
 	if len(c.Flows.Flows) == 0 {
@@ -119,7 +116,6 @@ func (c *Configuration) ListFlows() []string {
 	return flows
 }
 
-
 func (c *Configuration) ValidFlows(flows []string) (bool, string) {
 	var unknowns []string
 	for _, flow := range flows {
@@ -132,8 +128,6 @@ func (c *Configuration) ValidFlows(flows []string) (bool, string) {
 	}
 	return true, ""
 }
-
-
 
 func (c *Configuration) Print(logger *output.Logger) {
 	logger.Printf("Configured with %v executables:\n", len(c.Execs.Commands), color.Bold)

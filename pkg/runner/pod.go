@@ -48,7 +48,6 @@ type Pod struct {
 	logger *output.Logger
 }
 
-
 func NewPod(logger *output.Logger, c *configuration.Pod) Runnable {
 	return &Pod{
 		logger: logger,
@@ -59,8 +58,6 @@ func NewPod(logger *output.Logger, c *configuration.Pod) Runnable {
 func (p *Pod) ID() string {
 	return fmt.Sprintf("⎈️ %v", p.config.Name)
 }
-
-
 
 func (p *Pod) Start(ctx context.Context, rec chan output.Message) error {
 	// We need to get one pod
@@ -83,7 +80,7 @@ func (p *Pod) Start(ctx context.Context, rec chan output.Message) error {
 	if !found {
 		return fmt.Errorf("no pod matching %v found", p.config.Name)
 	}
-	
+
 	p.logger.Debugf("aggregating log for pod: %v\n", pod.Name)
 	err = p.aggregateLog(ctx, pod, rec)
 	if err != nil {
@@ -170,7 +167,7 @@ func Match(name string, pod string) bool {
 	if err != nil {
 		return false
 	}
-	return  r.Match([]byte(pod))
+	return r.Match([]byte(pod))
 }
 
 type PortForwardAPodRequest struct {

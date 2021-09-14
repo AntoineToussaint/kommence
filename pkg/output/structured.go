@@ -12,9 +12,9 @@ import (
 const TimeFormat = "15:04:05"
 
 type StructuredLog struct {
-	Level string
+	Level     string
 	Timestamp string
-	Parsed string
+	Parsed    string
 }
 
 type Data map[string]string

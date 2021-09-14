@@ -20,13 +20,7 @@ var execs, pods, flows []string
 // startCmd represents the start command
 var startCmd = &cobra.Command{
 	Use:   "start",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Start Executables, Pod forwards or Flows",
 	Run: func(cmd *cobra.Command, args []string) {
 		cancel := make(chan os.Signal, 2)
 		signal.Notify(cancel, os.Interrupt, syscall.SIGTERM)
@@ -43,7 +37,7 @@ to quickly create a Cobra application.`,
 		}
 
 		var r *runner.Runner
-		var c *runner.Configuration
+		var c *runner.Runtime
 
 		if interactiveExecs || interactivePods || interactiveFlows {
 			log.Debugf("starting interactive mode\n")
@@ -77,6 +71,7 @@ to quickly create a Cobra application.`,
 	},
 }
 
+// Completer for autocomplete in interactive mode.
 type Completer = func(in prompt.Document) []prompt.Suggest
 
 func executableCompleter(c *configuration.Configuration) Completer {
@@ -241,10 +236,10 @@ func startInteractiveFlow(ctx context.Context, log *output.Logger, c *configurat
 			}
 		}
 	}
-	for e, _ := range ex {
+	for e := range ex {
 		execs = append(execs, e)
 	}
-	for p, _ := range po {
+	for p := range po {
 		pods = append(pods, p)
 	}
 	return execs, pods
@@ -259,8 +254,7 @@ func contains(s []string, str string) bool {
 	return false
 }
 
-
-func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) (*runner.Runner, *runner.Configuration) {
+func startInteractive(ctx context.Context, log *output.Logger, c *configuration.Configuration) (*runner.Runner, *runner.Runtime) {
 	var execs []string
 	var pods []string
 	if interactiveExecs && len(c.ListExecutables()) > 0 {
@@ -285,14 +279,14 @@ func startInteractive(ctx context.Context, log *output.Logger, c *configuration.
 	}
 
 	r := runner.New(log, c)
-	return r, &runner.Configuration{Executables: execs, Pods: pods}
+	return r, &runner.Runtime{Executables: execs, Pods: pods}
 
 }
 
-func startCommandLine(ctx context.Context, log *output.Logger, c *configuration.Configuration) (*runner.Runner, *runner.Configuration) {
+func startCommandLine(ctx context.Context, log *output.Logger, c *configuration.Configuration) (*runner.Runner, *runner.Runtime) {
 	r := runner.New(log, c)
 	for _, flow := range flows {
-		otherExecs, otherPods := c.Flows.GetExecutables(flow),  c.Flows.GetPods(flow)
+		otherExecs, otherPods := c.Flows.GetExecutables(flow), c.Flows.GetPods(flow)
 		for _, exec := range otherExecs {
 			if !contains(execs, exec) {
 				execs = append(execs, exec)
@@ -304,7 +298,7 @@ func startCommandLine(ctx context.Context, log *output.Logger, c *configuration.
 			}
 		}
 	}
-	return r, &runner.Configuration{Executables: execs, Pods: pods}
+	return r, &runner.Runtime{Executables: execs, Pods: pods}
 }
 
 func init() {

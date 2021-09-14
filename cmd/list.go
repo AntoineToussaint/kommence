@@ -8,7 +8,6 @@ import (
 	"os"
 )
 
-
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
@@ -23,12 +22,11 @@ to quickly create a Cobra application.`,
 		log := output.NewLogger(debug)
 		config, err := configuration.Load(log, kommenceDir)
 		if err != nil {
-			log.Errorf(err.Error() + "\n", color.FgRed, color.Bold)
+			log.Errorf(err.Error()+"\n", color.FgRed, color.Bold)
 			os.Exit(1)
 		}
 		config.Print(log)
 	},
-
 }
 
 func init() {

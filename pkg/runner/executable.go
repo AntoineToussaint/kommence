@@ -25,7 +25,6 @@ type Executable struct {
 	config *configuration.Executable
 }
 
-
 func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable {
 	args := strings.Split(c.Cmd, " ")
 	return &Executable{

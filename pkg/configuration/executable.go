@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Executable configuration.
 type Executable struct {
 	ID          string
 	Shortcut    string
@@ -20,6 +21,7 @@ type Executable struct {
 	Watch       []string
 }
 
+// NewExecutable attempts to load a configuration.
 func NewExecutable(f string) (*Executable, error) {
 	data, err := ioutil.ReadFile(f)
 	if err != nil {
@@ -42,6 +44,7 @@ func NewExecutable(f string) (*Executable, error) {
 	return &cfg, nil
 }
 
+// ToString convert to string.
 func (e *Executable) ToString(log *output.Logger) string {
 	return output.FromTemplate(log, `- {{.ID}}
   command: {{.Cmd}}
@@ -49,11 +52,13 @@ func (e *Executable) ToString(log *output.Logger) string {
 `, e)
 }
 
+// Executables aggregate Executable configurations.
 type Executables struct {
 	Commands  map[string]*Executable
 	Shortcuts map[string]*Executable
 }
 
+// NewExecutableConfiguration loads Executables configuration.
 func NewExecutableConfiguration(p string) (*Executables, error) {
 	config := Executables{Commands: make(map[string]*Executable), Shortcuts: make(map[string]*Executable)}
 	err := filepath.Walk(p,
@@ -85,6 +90,7 @@ func NewExecutableConfiguration(p string) (*Executables, error) {
 	return &config, nil
 }
 
+// Get an Executable by ID or shortcut.
 func (c *Executables) Get(x string) (*Executable, bool) {
 	exec, ok := c.Commands[x]
 	if !ok {
