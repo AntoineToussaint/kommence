@@ -12,11 +12,11 @@
 Command line mode
 
 ```shell
-go run kommence.go start -x json,counter -d
+go run kommence.go start -x json,counter
 ```
 
 Interactive mode
 
 ```shell
-go run kommence.go start -X -d
+go run kommence.go start -X
 ```
