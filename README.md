@@ -7,16 +7,16 @@
 [![demo](https://asciinema.org/a/vE0I9uTRoXdij7krp8QyAPnHv.svg)](https://asciinema.org/a/vE0I9uTRoXdij7krp8QyAPnHv?autoplay=1)
 
 
-(you may need to run `go mod install`)
+## Executables
 
 Command line mode
 
 ```shell
-go run kommence.go start -x json,counter --config=examples/kommence -d
+go run kommence.go start -x json,counter -d
 ```
 
 Interactive mode
 
 ```shell
-go run kommence.go start -X --config=examples/kommence -d
+go run kommence.go start -X -d
 ```
