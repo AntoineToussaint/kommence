@@ -7,6 +7,12 @@
 [![demo](https://asciinema.org/a/vE0I9uTRoXdij7krp8QyAPnHv.svg)](https://asciinema.org/a/vE0I9uTRoXdij7krp8QyAPnHv?autoplay=1)
 
 
+## Install
+
+### MacOS
+
+
+
 ## Executables
 
 Command line mode
