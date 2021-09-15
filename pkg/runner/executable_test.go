@@ -32,7 +32,7 @@ func TestSimpleExecutable(t *testing.T) {
 	go exec.Start(ctx, rec)
 
 	// Wait a bit
-	time.Sleep(100*time.Millisecond)
+	time.Sleep(500*time.Millisecond)
 
 	// Modify the file to create a restart
 	anything := []byte("anything")
@@ -40,14 +40,14 @@ func TestSimpleExecutable(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Wait a bit
-	time.Sleep(100*time.Millisecond)
+	time.Sleep(500*time.Millisecond)
 
 	// Write again
 	_, err = file.Write(anything)
 	assert.NoError(t, err)
 
 	// Wait a bit
-	time.Sleep(100*time.Millisecond)
+	time.Sleep(500*time.Millisecond)
 
 	// Stop the process
 	exec.Stop(ctx, rec)
