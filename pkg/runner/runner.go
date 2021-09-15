@@ -124,7 +124,6 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 			return err
 		}
 	}
-	return nil
 }
 
 func (r *Runner) Stop(ctx context.Context) error {

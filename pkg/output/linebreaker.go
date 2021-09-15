@@ -3,7 +3,7 @@ package output
 type LineBreaker struct {
 	Output      chan Message
 	ID          string
-	messageType        MessageType
+	messageType MessageType
 	currentLine []byte
 }
 

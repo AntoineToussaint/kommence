@@ -93,32 +93,37 @@ func NewFlowConfiguration(log *output.Logger, p string) (*Flows, error) {
 // Get a Flow by ID or shortcut.
 func (c *Flows) Get(x string) (*Flow, bool) {
 	flow, ok := c.Flows[x]
-	if !ok {
-		flow, ok = c.Shortcuts[x]
+	if ok {
+		return flow, ok
 	}
+	flow, ok = c.Shortcuts[x]
 	return flow, ok
 }
 
 // GetExecutables get Executables from a Flow by ID or shortcut.
 func (c *Flows) GetExecutables(x string) []string {
 	flow, ok := c.Flows[x]
-	if !ok {
-		flow, ok = c.Shortcuts[x]
+	if ok {
+		return flow.Executables
 	}
-	if flow == nil {
-		return nil
+	// Try shortcuts
+	flow, ok = c.Shortcuts[x]
+	if ok {
+		return flow.Executables
 	}
-	return flow.Executables
+	return nil
 }
 
 // GetPods get Pods from a Flow by ID or shortcut.
 func (c *Flows) GetPods(x string) []string {
 	flow, ok := c.Flows[x]
-	if !ok {
-		flow, ok = c.Shortcuts[x]
+	if ok {
+		return flow.Pods
 	}
-	if flow == nil {
-		return nil
+	// Try shortcuts
+	flow, ok = c.Shortcuts[x]
+	if ok {
+		return flow.Pods
 	}
-	return flow.Pods
+	return nil
 }
