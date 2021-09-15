@@ -96,6 +96,7 @@ func (p *Pod) Start(ctx context.Context, rec chan output.Message) error {
 }
 
 func (p *Pod) Stop(ctx context.Context, rec chan output.Message) error {
+	p.logger.Debugf("stopping forwarding pod: %v\n", p.ID())
 	return nil
 }
 

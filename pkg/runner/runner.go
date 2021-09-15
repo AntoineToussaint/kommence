@@ -101,15 +101,15 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 		}
 	}()
 
-	stop := make(chan error)
+	errors := make(chan error)
 	for _, task := range r.tasks {
 		go func(s Runnable) {
 			// Some runnable returns error (Pod) and some don't (Executable)
 			// On error, we should return: stop kommence
 			err := s.Start(ctx, r.Receiver)
 			if err != nil {
-				stop <- err
-				r.Logger.Errorf(err.Error() + "\n")
+				errors <- err
+				r.Logger.Printf("%v received an unrecoverable error: %v\n", s.ID(), err)
 			}
 		}(task)
 	}
@@ -119,9 +119,9 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 		case <-ctx.Done():
 			r.Logger.Debugf("Done with all tasks\n")
 			return nil
-		case err := <-stop:
+		case err := <-errors:
 			r.Logger.Debugf("Received an error from a task: %v\n", err)
-			return nil
+			return err
 		}
 	}
 	return nil

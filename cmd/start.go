@@ -51,15 +51,24 @@ var startCmd = &cobra.Command{
 		}
 		go func() {
 			log.Debugf("starting runner\n")
-			r.Run(ctx, c)
+			err := r.Run(ctx, c)
+			if err != nil {
+				log.Printf("Stopping Kommence because of unrecoverable error\n")
+			}
 			// Stop if/when we are done
+			log.Debugf("stopping the context\n")
 			stop()
 		}()
 		L:
 		for {
 			select {
+			case <-ctx.Done():
+				log.Debugf("Stopping kommence from context.\n", color.Bold)
+				stop()
+				break L
+
 			case <-cancel:
-				log.Printf("Stopping kommence from Ctrl-C.\n", color.Bold)
+				log.Debugf("Stopping kommence from Ctrl-C.\n", color.Bold)
 				stop()
 				break L
 
