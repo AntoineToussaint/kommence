@@ -25,8 +25,7 @@ func TestSimpleExecutable(t *testing.T) {
 	config := configuration.Executable{ID: "X", Cmd: "echo world", Watch: []string{file.Name()}}
 	exec := runner.NewExecutable(log, &config)
 
-	// We expect these messages: Log -> Stop -> Restart -> Log -> Stop
-	rec := make(chan output.Message, 6)
+	rec := make(chan output.Message, 8)
 	ctx := context.Background()
 
 	// Run in a go routine and get the messages
@@ -43,9 +42,19 @@ func TestSimpleExecutable(t *testing.T) {
 	// Wait a bit
 	time.Sleep(100*time.Millisecond)
 
+	// Write again
+	_, err = file.Write(anything)
+	assert.NoError(t, err)
+
+	// Wait a bit
+	time.Sleep(100*time.Millisecond)
+
 	// Stop the process
 	exec.Stop(ctx, rec)
 
+	assert.Equal(t, output.Log, (<-rec).Type)
+	assert.Equal(t, output.Stop, (<-rec).Type)
+	assert.Equal(t, output.Restart, (<-rec).Type)
 	assert.Equal(t, output.Log, (<-rec).Type)
 	assert.Equal(t, output.Stop, (<-rec).Type)
 	assert.Equal(t, output.Restart, (<-rec).Type)
