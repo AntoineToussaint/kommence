@@ -49,28 +49,24 @@ var startCmd = &cobra.Command{
 			log.Printf("Please specify executables, pods or flows or run in interactive mode.\n")
 			os.Exit(0)
 		}
-		log.Debugf("using runner configuration: %v", c)
 		go func() {
 			log.Debugf("starting runner\n")
 			r.Run(ctx, c)
-			// Stop when we are done
+			// Stop if/when we are done
 			stop()
 		}()
-
+		L:
 		for {
 			select {
 			case <-cancel:
-				log.Printf("Stopping kommence.\n", color.Bold)
-				r.Stop(ctx)
-				os.Exit(0)
+				log.Printf("Stopping kommence from Ctrl-C.\n", color.Bold)
+				stop()
+				break L
 
-			case <-ctx.Done():
-				log.Printf("Stopping kommence.\n", color.Bold)
-				r.Stop(ctx)
-				os.Exit(0)
 			}
 		}
-
+		log.Debugf("Stopping the runner\n")
+		r.Stop(ctx)
 	},
 }
 

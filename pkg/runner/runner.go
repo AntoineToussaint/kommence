@@ -3,12 +3,10 @@ package runner
 import (
 	"context"
 	"fmt"
-	"github.com/fatih/color"
-	"strings"
-	"sync"
-
 	"github.com/antoinetoussaint/kommence/pkg/configuration"
 	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/fatih/color"
+	"strings"
 )
 
 type Runner struct {
@@ -102,19 +100,30 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 			r.Logger.Printf(padding.ID(msg.ID)+" >"+rendered+"\n", style...)
 		}
 	}()
-	var wg sync.WaitGroup
-	wg.Add(len(r.tasks))
 
+	stop := make(chan error)
 	for _, task := range r.tasks {
 		go func(s Runnable) {
+			// Some runnable returns error (Pod) and some don't (Executable)
+			// On error, we should return: stop kommence
 			err := s.Start(ctx, r.Receiver)
 			if err != nil {
+				stop <- err
 				r.Logger.Errorf(err.Error() + "\n")
 			}
-			wg.Done()
 		}(task)
 	}
-	wg.Wait()
+	// Wait for context Done or if we stop
+	for {
+		select {
+		case <-ctx.Done():
+			r.Logger.Debugf("Done with all tasks\n")
+			return nil
+		case err := <-stop:
+			r.Logger.Debugf("Received an error from a task: %v\n", err)
+			return nil
+		}
+	}
 	return nil
 }
 

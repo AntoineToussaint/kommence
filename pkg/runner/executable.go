@@ -21,8 +21,9 @@ type Executable struct {
 	args    []string
 	command *exec.Cmd
 
-	logger *output.Logger
-	config *configuration.Executable
+	logger      *output.Logger
+	config      *configuration.Executable
+	restartChan chan interface{}
 }
 
 func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable {
@@ -44,22 +45,28 @@ func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
 	e.logger.Debugf("creating watcher: %v\n", e.ID())
 	w := e.createWatcher()
 	go func() {
-		for {
-			select {
-			case <-w.Event:
-				go e.restart(ctx, rec)
-			case err := <-w.Error:
-				log.Fatalln(err)
-			case <-w.Closed:
-				e.logger.Debugf("watcher closed: %v", e.ID())
-				return
-			}
-		}
+		e.logger.Debugf("start: %v\n", e.ID())
+		e.start(ctx, rec)
 	}()
-	return e.start(ctx, rec)
+	for {
+		select {
+		case <-w.Event:
+			e.logger.Debugf("Watcher caused restart: %v\n", e.ID())
+			go e.restart(ctx, rec)
+		case err := <-w.Error:
+			e.logger.Errorf("Watcher error: %v: %v\n", e.ID(), err)
+			return err
+		case <-w.Closed:
+			e.logger.Debugf("Watcher closed: %v\n", e.ID())
+			return nil
+		}
+	}
+	e.logger.Debugf("End of start %v", e.ID())
+	return nil
 }
 
 func (e *Executable) Stop(ctx context.Context, rec chan output.Message) error {
+	e.logger.Debugf("Stopping: %v\n", e.ID())
 	return e.kill(ctx, rec)
 }
 
@@ -97,7 +104,8 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 	return w
 }
 
-func (e *Executable) start(ctx context.Context, rec chan output.Message) error {
+func (e *Executable) start(ctx context.Context, rec chan output.Message) {
+	e.logger.Debugf("starting %v\n", e.ID())
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
 	e.command.Env = os.Environ()
 	for k, v := range e.config.Env {
@@ -112,13 +120,12 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) error {
 
 	if err := e.command.Start(); err != nil {
 		e.logger.Errorf("can't start %v: %v", e.ID(), err)
-		return err
 	}
 	go func() {
 		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stdout)
 	}()
 	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID()), stderr)
-	return nil
+	return
 }
 
 func (e *Executable) kill(ctx context.Context, rec chan output.Message) error {
@@ -133,7 +140,10 @@ func (e *Executable) kill(ctx context.Context, rec chan output.Message) error {
 }
 
 func (e *Executable) restart(ctx context.Context, rec chan output.Message) {
-	e.kill(ctx, rec)
-	rec <- output.Message{ID: e.ID(), Content: "** restarting **"}
+	err := e.kill(ctx, rec)
+	if err != nil {
+		e.logger.Errorf("can't kill %v: %v\n", e.ID(), err)
+	}
+	rec <- output.Message{ID: e.ID(), Content: "⏳ RESTARTING ⏳"}
 	e.start(ctx, rec)
 }
