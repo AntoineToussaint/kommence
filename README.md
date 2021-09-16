@@ -25,7 +25,9 @@ go get -u github.com/AntoineToussaint/kommence
 
 TODO
 
-## Run local executables
+## Run examples
+
+To run these examples, clone this repository and place yourself in the corresponding directory.
 
 Command line mode
 
