@@ -63,7 +63,7 @@ func NewExecutableConfiguration(log *output.Logger, p string) (*Executables, err
 	config := Executables{Commands: make(map[string]*Executable), Shortcuts: make(map[string]*Executable)}
 	dir, err := os.Stat(p)
 	if err != nil || !dir.IsDir() {
-		log.Debugf("Executables folder not found in kommence config")
+		log.Debugf("Executables folder not found in kommence config\n")
 		return &config, nil
 	}
 	err = filepath.Walk(p,

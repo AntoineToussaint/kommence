@@ -63,7 +63,7 @@ func NewPodConfiguration(log *output.Logger, p string) (*Pods, error) {
 	config := Pods{Pods: make(map[string]*Pod), Shortcuts: make(map[string]*Pod)}
 	dir, err := os.Stat(p)
 	if err != nil || !dir.IsDir() {
-		log.Debugf("Pods folder not found in kommence config")
+		log.Debugf("Pods folder not found in kommence config\n")
 		return &config, nil
 	}
 	err = filepath.Walk(p,

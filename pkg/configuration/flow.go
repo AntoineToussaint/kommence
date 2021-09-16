@@ -58,7 +58,7 @@ func NewFlowConfiguration(log *output.Logger, p string) (*Flows, error) {
 	config := Flows{Flows: make(map[string]*Flow), Shortcuts: make(map[string]*Flow)}
 	dir, err := os.Stat(p)
 	if err != nil || !dir.IsDir() {
-		log.Debugf("Flows folder not found in kommence config")
+		log.Debugf("Flows folder not found in kommence config\n")
 		return &config, nil
 	}
 	err = filepath.Walk(p,
