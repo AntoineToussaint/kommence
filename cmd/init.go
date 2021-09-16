@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 
 	"github.com/spf13/cobra"
 )

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
-	"github.com/antoinetoussaint/kommence/pkg/configuration"
-	"github.com/antoinetoussaint/kommence/pkg/output"
-	"github.com/antoinetoussaint/kommence/pkg/runner"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/runner"
 	"github.com/c-bata/go-prompt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"

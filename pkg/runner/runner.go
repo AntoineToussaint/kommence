@@ -3,8 +3,8 @@ package runner
 import (
 	"context"
 	"fmt"
-	"github.com/antoinetoussaint/kommence/pkg/configuration"
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/fatih/color"
 	"strings"
 )

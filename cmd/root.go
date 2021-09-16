@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"

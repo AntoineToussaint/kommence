@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/antoinetoussaint/kommence/pkg/configuration"
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
@@ -11,13 +11,7 @@ import (
 // listCmd represents the list command
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "List all possible tasks to run",
 	Run: func(cmd *cobra.Command, args []string) {
 		log := output.NewLogger(debug)
 		config, err := configuration.Load(log, kommenceDir)

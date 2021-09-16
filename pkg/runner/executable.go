@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/antoinetoussaint/kommence/pkg/configuration"
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/radovskyb/watcher"
 )
 

@@ -1,7 +1,7 @@
 package runner_test
 
 import (
-	"github.com/antoinetoussaint/kommence/pkg/runner"
+	"github.com/AntoineToussaint/kommence/pkg/runner"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

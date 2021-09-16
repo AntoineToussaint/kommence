@@ -5,7 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/fatih/color"
 )
 

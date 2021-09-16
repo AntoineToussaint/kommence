@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )

@@ -1,7 +1,7 @@
 package output_test
 
 import (
-	"github.com/antoinetoussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

@@ -3,7 +3,7 @@ module github.com/AntoineToussaint/kommence
 go 1.17
 
 require (
-	github.com/antoinetoussaint/kommence v0.1.1-alpha
+	github.com/AntoineToussaint/kommence v0.1.1-alpha
 	github.com/araddon/dateparse v0.0.0-20210429162001-6b43995a97de
 	github.com/c-bata/go-prompt v0.2.5
 	github.com/fatih/color v1.12.0
