@@ -30,11 +30,11 @@ TODO
 Command line mode
 
 ```shell
-go run kommence.go start -x json,counter
+kommence start -x json,counter
 ```
 
 Interactive mode
 
 ```shell
-go run kommence.go start -X
+kommence start -X
 ```
