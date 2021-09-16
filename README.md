@@ -11,11 +11,15 @@
 
 ### MacOS
 
-TODO
+```sh
+go get -u github.com/AntoineToussaint/kommence
+```
 
 ## Linux
 
-TODO
+```sh
+go get -u github.com/AntoineToussaint/kommence
+```
 
 ## Windows
 
