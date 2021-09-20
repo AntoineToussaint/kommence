@@ -90,6 +90,9 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 
 	go func() {
 		for msg := range r.Receiver {
+			if msg.Type != output.Log {
+				continue
+			}
 			// Parse message
 			parsed := output.ParseToStructured(msg.Content)
 			// Render it

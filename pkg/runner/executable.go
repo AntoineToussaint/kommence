@@ -1,6 +1,8 @@
 package runner
 
 import (
+	"bufio"
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -121,6 +123,12 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	if err := e.command.Start(); err != nil {
 		e.logger.Errorf("can't start %v: %v", e.ID(), err)
 	}
+	// Export resources
+	go func() {
+		e.MonitorMemory(e.command.Process.Pid, rec)
+	}()
+
+	// Export logs
 	go func() {
 		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), output.Log), stdout)
 	}()
@@ -139,6 +147,53 @@ func (e *Executable) kill(ctx context.Context, rec chan output.Message) error {
 	}
 	return nil
 }
+
+func (e *Executable) MonitorMemory(pid int, rec chan output.Message) {
+	ticker := time.NewTicker(500 * time.Millisecond)
+	for {
+		select {
+		case <-ticker.C:
+			mem, err := calculateMemory(pid)
+			if err != nil {
+				e.logger.Errorf("can't calc memory for %v: %v", e.ID(), err)
+				continue
+			}
+			rec <- output.Message{
+				ID:   e.ID() ,
+				Type:  output.Memory,
+				Content: fmt.Sprintf("%v", mem),
+			}
+		}
+	}
+}
+
+func calculateMemory(pid int) (uint64, error) {
+	f, err := os.Open(fmt.Sprintf("/proc/%d/smaps", pid))
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+
+	res := uint64(0)
+	pfx := []byte("Pss:")
+	r := bufio.NewScanner(f)
+	for r.Scan() {
+		line := r.Bytes()
+		if bytes.HasPrefix(line, pfx) {
+			var size uint64
+			_, err := fmt.Sscanf(string(line[4:]), "%d", &size)
+			if err != nil {
+				return 0, err
+			}
+			res += size
+		}
+	}
+	if err := r.Err(); err != nil {
+		return 0, err
+	}
+	return res, nil
+}
+
 
 func (e *Executable) restart(ctx context.Context, rec chan output.Message) {
 	err := e.kill(ctx, rec)

@@ -8,6 +8,8 @@ const (
 	Stop
 	Restart
 	PodConnection
+	Memory
+	CPU
 )
 
 // Message are how processes communicate
