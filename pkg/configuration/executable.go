@@ -3,7 +3,6 @@ package configuration
 import (
 	"fmt"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -19,11 +18,18 @@ type Executable struct {
 	Cmd         string
 	Env         map[string]string
 	Watch       []string
+	StdErr      string `yaml:"std_err"`
 }
+
+const (
+	Ignore  = "ignore"
+	AsError = "error"
+	AsLog   = "log"
+)
 
 // NewExecutable attempts to load a configuration.
 func NewExecutable(f string) (*Executable, error) {
-	data, err := ioutil.ReadFile(f)
+	data, err := os.ReadFile(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't load file: %v", f)
 	}
@@ -37,6 +43,9 @@ func NewExecutable(f string) (*Executable, error) {
 	}
 	if cfg.Cmd == "" {
 		return nil, fmt.Errorf("command required")
+	}
+	if cfg.StdErr == "" {
+		cfg.StdErr = Ignore
 	}
 	if cfg.Description == "" {
 		cfg.Description = "No description available"

@@ -2,5 +2,6 @@ id: go
 shortcut: g
 description: Run a go program
 cmd: go run examples/main.go
+std_err: log
 watch:
   - examples/main.go

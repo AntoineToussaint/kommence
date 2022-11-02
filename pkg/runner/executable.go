@@ -19,9 +19,10 @@ import (
 )
 
 type Executable struct {
-	cmd     string
-	args    []string
-	command *exec.Cmd
+	cmd        string
+	args       []string
+	command    *exec.Cmd
+	stdErrMode string
 
 	logger      *output.Logger
 	config      *configuration.Executable
@@ -31,10 +32,11 @@ type Executable struct {
 func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable {
 	args := strings.Split(c.Cmd, " ")
 	return &Executable{
-		logger: logger,
-		config: c,
-		cmd:    args[0],
-		args:   args[1:],
+		logger:     logger,
+		config:     c,
+		cmd:        args[0],
+		args:       args[1:],
+		stdErrMode: c.StdErr,
 	}
 }
 
@@ -125,14 +127,17 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	}
 	// Export resources
 	go func() {
-		e.MonitorMemory(e.command.Process.Pid, rec)
+		// TODO Doesn't work on MAC
+		//e.MonitorMemory(e.command.Process.Pid, rec)
 	}()
 
 	// Export logs
 	go func() {
 		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), output.Log), stdout)
 	}()
-	_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), output.Error), stderr)
+	if e.stdErrMode == configuration.AsLog {
+		_, _ = io.Copy(output.NewLineBreaker(rec, e.ID(), output.Log), stderr)
+	}
 	return
 }
 
@@ -159,8 +164,8 @@ func (e *Executable) MonitorMemory(pid int, rec chan output.Message) {
 				continue
 			}
 			rec <- output.Message{
-				ID:   e.ID() ,
-				Type:  output.Memory,
+				ID:      e.ID(),
+				Type:    output.Memory,
 				Content: fmt.Sprintf("%v", mem),
 			}
 		}
@@ -193,7 +198,6 @@ func calculateMemory(pid int) (uint64, error) {
 	}
 	return res, nil
 }
-
 
 func (e *Executable) restart(ctx context.Context, rec chan output.Message) {
 	err := e.kill(ctx, rec)
