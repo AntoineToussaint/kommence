@@ -53,13 +53,13 @@ var startCmd = &cobra.Command{
 			log.Debugf("starting runner\n")
 			err := r.Run(ctx, c)
 			if err != nil {
-				log.Printf("Stopping Kommence because of unrecoverable error\n")
+				log.Printf("Stopping kommence because of unrecoverable error\n")
 			}
 			// Stop if/when we are done
 			log.Debugf("stopping the context\n")
 			stop()
 		}()
-		L:
+	L:
 		for {
 			select {
 			case <-ctx.Done():

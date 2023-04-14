@@ -3,8 +3,10 @@ package configuration
 import (
 	"fmt"
 	"gopkg.in/yaml.v2"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/pkg/errors"
@@ -38,9 +40,6 @@ func NewExecutable(f string) (*Executable, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
 	}
-	if cfg.ID == "" {
-		return nil, fmt.Errorf("ID required")
-	}
 	if cfg.Cmd == "" {
 		return nil, fmt.Errorf("command required")
 	}
@@ -50,6 +49,8 @@ func NewExecutable(f string) (*Executable, error) {
 	if cfg.Description == "" {
 		cfg.Description = "No description available"
 	}
+	cfg.ID = strings.Replace(f, ".yaml", "", 1)
+	cfg.ID = strings.Replace(cfg.ID, "kommence/executables/", "", 1)
 	return &cfg, nil
 }
 
@@ -75,29 +76,26 @@ func NewExecutableConfiguration(log *output.Logger, p string) (*Executables, err
 		log.Debugf("Executables folder not found in kommence config\n")
 		return &config, nil
 	}
-	err = filepath.Walk(p,
-		func(p string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
-				return nil
-			}
-			c, err := NewExecutable(p)
-			if err != nil {
-				return err
-			}
-			config.Commands[c.ID] = c
-			shortcut := c.Shortcut
-			if shortcut == "" {
-				return nil
-			}
-			if _, ok := config.Shortcuts[shortcut]; ok {
-				return fmt.Errorf("shortcut %v duplicated in executables", shortcut)
-			}
-			config.Shortcuts[shortcut] = c
+	log.Debugf("walking %s", p)
+	err = filepath.WalkDir(p, func(s string, d fs.DirEntry, err error) error {
+		if !strings.HasSuffix(s, ".yaml") {
 			return nil
-		})
+		}
+		c, err := NewExecutable(s)
+		if err != nil {
+			return err
+		}
+		config.Commands[c.ID] = c
+		shortcut := c.Shortcut
+		if shortcut == "" {
+			return nil
+		}
+		if _, ok := config.Shortcuts[shortcut]; ok {
+			return fmt.Errorf("shortcut %v duplicated in executables", shortcut)
+		}
+		config.Shortcuts[shortcut] = c
+		return nil
+	})
 	if err != nil {
 		return nil, fmt.Errorf("error loading configurations %v: %v", p, err)
 	}

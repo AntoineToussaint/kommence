@@ -3,9 +3,10 @@ package configuration
 import (
 	"fmt"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/pkg/errors"
@@ -22,7 +23,7 @@ type Flow struct {
 
 // NewFlow attempts to load a configuration.
 func NewFlow(f string) (*Flow, error) {
-	data, err := ioutil.ReadFile(f)
+	data, err := os.ReadFile(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't load file: %v", f)
 	}
@@ -31,12 +32,12 @@ func NewFlow(f string) (*Flow, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
 	}
-	if cfg.ID == "" {
-		return nil, fmt.Errorf("ID required")
-	}
+
 	if cfg.Description == "" {
 		cfg.Description = "No description available"
 	}
+	cfg.ID = strings.Replace(f, ".yaml", "", 1)
+	cfg.ID = strings.Replace(cfg.ID, "kommence/flows/", "", 1)
 	return &cfg, nil
 }
 
@@ -61,12 +62,12 @@ func NewFlowConfiguration(log *output.Logger, p string) (*Flows, error) {
 		log.Debugf("Flows folder not found in kommence config\n")
 		return &config, nil
 	}
-	err = filepath.Walk(p,
-		func(p string, info os.FileInfo, err error) error {
+	err = filepath.WalkDir(p,
+		func(p string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err
 			}
-			if info.IsDir() {
+			if !strings.HasSuffix(p, ".yaml") {
 				return nil
 			}
 			c, err := NewFlow(p)
