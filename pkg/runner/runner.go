@@ -17,8 +17,9 @@ type Runner struct {
 }
 
 type Runtime struct {
-	Executables []string
-	Pods        []string
+	Executables    []string
+	Pods           []string
+	KubeConfigPath string
 }
 
 type Runnable interface {
@@ -63,7 +64,7 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 	// Load Kubernetes client
 	if len(cfg.Pods) > 0 {
 		r.Logger.Debugf("loading kubernetes client\n")
-		LoadKubeClient()
+		LoadKubeClient(cfg.KubeConfigPath)
 	}
 
 	for _, pod := range cfg.Pods {

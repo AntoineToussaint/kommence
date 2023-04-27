@@ -9,6 +9,7 @@ import (
 )
 
 var kommenceDir string
+var kubeConfigPath string
 var debug bool
 
 // rootCmd represents the base command when called without any subcommands
@@ -41,6 +42,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&kommenceDir, "config", "kommence", "kommence folder (default is kommence")
+	rootCmd.PersistentFlags().StringVar(&kubeConfigPath, "kube", "", "kubernetes config path")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug mode")
 
 	// Cobra also supports local flags, which will only run

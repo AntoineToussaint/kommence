@@ -109,6 +109,11 @@ func (e *Executable) createWatcher() *watcher.Watcher {
 }
 
 func (e *Executable) start(ctx context.Context, rec chan output.Message) {
+	if e.config.Delay != "" {
+		e.logger.Debugf("delaying %v %v\n", e.ID(), e.config.Delay)
+		d, _ := time.ParseDuration(e.config.Delay)
+		time.Sleep(d)
+	}
 	e.logger.Debugf("starting %v\n", e.ID())
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
 	e.command.Env = os.Environ()

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/AntoineToussaint/kommence/pkg/configuration"
 	"github.com/AntoineToussaint/kommence/pkg/output"
-	"github.com/pkg/errors"
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,12 +14,10 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/tools/portforward"
 	"k8s.io/client-go/transport/spdy"
-	"k8s.io/client-go/util/homedir"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
-	"path"
 	"regexp"
 	"strings"
 )
@@ -28,11 +25,11 @@ import (
 var client *kubernetes.Clientset
 var config *rest.Config
 
-func LoadKubeClient() {
-	home := homedir.HomeDir()
-	kubeconfig := path.Join(home, ".kube/config")
+func LoadKubeClient(p string) {
+	//home := homedir.HomeDir()
+	//kubeconfig := path.Join(home, ".kube/config")
 	var err error
-	config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+	config, err = clientcmd.BuildConfigFromFlags("", p)
 	if err != nil {
 		panic(err.Error())
 	}
@@ -56,42 +53,34 @@ func NewPod(logger *output.Logger, c *configuration.Pod) Runnable {
 }
 
 func (p *Pod) ID() string {
-	return fmt.Sprintf("⎈️ %v", p.config.Name)
+	return fmt.Sprintf("⎈️ %v", p.config.ID)
 }
 
 func (p *Pod) Start(ctx context.Context, rec chan output.Message) error {
 	// We need to get one pod
-	pods, err := client.CoreV1().Pods(p.config.Namespace).List(context.TODO(), metav1.ListOptions{})
+	p.logger.Debugf("looking for service %v in namespace %v\n", p.config.Service, p.config.Namespace)
+	pods, err := client.CoreV1().Pods(p.config.Namespace).List(context.TODO(), metav1.ListOptions{LabelSelector: fmt.Sprintf("app=%s", p.config.Service)})
 	if err != nil {
 		panic(err.Error())
 	}
 	if len(pods.Items) == 0 {
 		return fmt.Errorf("no pod found in namespace %v", p.config.Namespace)
 	}
-	var pod v1.Pod
-	found := false
-	for _, po := range pods.Items {
-		if MatchPod(p.config.Name, po.Name) {
-			pod = po
-			found = true
-			break
+	var pod v1.Pod = pods.Items[0]
+	go func() {
+		p.logger.Debugf("aggregating log for pod: %v\n", pod.Name)
+		err = p.aggregateLog(ctx, pod, rec)
+		if err != nil {
+			p.logger.Errorf("can't aggregate log: %v", err)
 		}
-	}
-	if !found {
-		return fmt.Errorf("no pod matching %v found", p.config.Name)
-	}
+	}()
+	go func() {
+		err = p.forward(ctx, pod, rec)
+		if err != nil {
+			p.logger.Errorf("cannot forward: %v", err)
+		}
 
-	p.logger.Debugf("aggregating log for pod: %v\n", pod.Name)
-	err = p.aggregateLog(ctx, pod, rec)
-	if err != nil {
-		return errors.Wrapf(err, "can't aggregate log")
-	}
-
-	p.logger.Debugf("forwarding pod: %v\n", pod.Name)
-	err = p.forward(ctx, pod, rec)
-	if err != nil {
-		return errors.Wrapf(err, "can't forward port")
-	}
+	}()
 	return nil
 }
 
@@ -101,7 +90,6 @@ func (p *Pod) Stop(ctx context.Context, rec chan output.Message) error {
 }
 
 func (p *Pod) forward(ctx context.Context, pod v1.Pod, rec chan output.Message) error {
-
 	stream := genericclioptions.IOStreams{
 		In:     os.Stdin,
 		Out:    output.NewLineBreaker(rec, p.ID(), output.PodConnection),
@@ -113,6 +101,8 @@ func (p *Pod) forward(ctx context.Context, pod v1.Pod, rec chan output.Message) 
 	stop := make(chan struct{}, 1)
 	// ready communicate when the port forward is ready to get traffic
 	ready := make(chan struct{})
+
+	p.logger.Debugf("running port forward for pod %v %v:%v", pod.Name, p.config.LocalPort, p.config.PodPort)
 
 	req := PortForwardAPodRequest{
 		Pod:       pod,

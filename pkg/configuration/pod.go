@@ -2,9 +2,9 @@ package configuration
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/pkg/errors"
@@ -15,7 +15,7 @@ type Pod struct {
 	ID          string
 	Shortcut    string
 	Description string
-	Name        string
+	Service     string
 	Namespace   string
 	Container   string
 	LocalPort   int `yaml:"localPort"`
@@ -23,18 +23,17 @@ type Pod struct {
 }
 
 func NewPod(f string) (*Pod, error) {
-	data, err := ioutil.ReadFile(f)
+	data, err := os.ReadFile(f)
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't load file: %v", f)
 	}
 	var cfg Pod
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		return nil, errors.Wrap(err, "can't unmarshal flow configuration")
+		return nil, errors.Wrap(err, "can't unmarshal pod configuration")
 	}
-	if cfg.Name == "" {
-		return nil, nil
-	}
+	cfg.ID = strings.Replace(f, ".yaml", "", 1)
+	cfg.ID = strings.Replace(cfg.ID, "kommence/pods/", "", 1)
 	if cfg.Namespace == "" {
 		return nil, nil
 	}
@@ -66,16 +65,14 @@ func NewPodConfiguration(log *output.Logger, p string) (*Pods, error) {
 		log.Debugf("Pods folder not found in kommence config\n")
 		return &config, nil
 	}
-	err = filepath.Walk(p,
-		func(p string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() {
+	err = filepath.WalkDir(p,
+		func(p string, d os.DirEntry, err error) error {
+			if !strings.HasSuffix(p, ".yaml") {
 				return nil
 			}
 			c, err := NewPod(p)
 			if err != nil {
+				log.Errorf("cannot load pod: %v", err)
 				return err
 			}
 			config.Pods[c.ID] = c

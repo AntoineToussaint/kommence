@@ -306,7 +306,7 @@ func startCommandLine(ctx context.Context, log *output.Logger, c *configuration.
 			}
 		}
 	}
-	return r, &runner.Runtime{Executables: execs, Pods: pods}
+	return r, &runner.Runtime{Executables: execs, Pods: pods, KubeConfigPath: kubeConfigPath}
 }
 
 func init() {

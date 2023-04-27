@@ -19,6 +19,7 @@ type Executable struct {
 	Description string
 	Cmd         string
 	Env         map[string]string
+	Delay       string
 	Watch       []string
 	StdErr      string `yaml:"std_err"`
 }
