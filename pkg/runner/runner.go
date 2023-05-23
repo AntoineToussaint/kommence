@@ -3,8 +3,8 @@ package runner
 import (
 	"context"
 	"fmt"
-	"github.com/AntoineToussaint/kommence/pkg/configuration"
-	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/jarvis/pkg/configuration"
+	"github.com/AntoineToussaint/jarvis/pkg/output"
 	"github.com/fatih/color"
 	"strings"
 )
@@ -109,7 +109,7 @@ func (r *Runner) Run(ctx context.Context, cfg *Runtime) error {
 	for _, task := range r.tasks {
 		go func(s Runnable) {
 			// Some runnable returns error (Pod) and some don't (Executable)
-			// On error, we should return: stop kommence
+			// On error, we should return: stop jarvis
 			err := s.Start(ctx, r.Receiver)
 			if err != nil {
 				errors <- err

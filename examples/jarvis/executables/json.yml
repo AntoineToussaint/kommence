@@ -3,6 +3,6 @@ shortcut: j
 description: Run a counter in JSON
 cmd: ./examples/json.sh
 env:
-  KOMMENCE_VAR: kommence!
+  KOMMENCE_VAR: jarvis!
 watch:
   - examples/json.sh

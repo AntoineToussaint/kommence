@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/jarvis/pkg/output"
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v3"
 )
@@ -33,7 +33,7 @@ func NewPod(f string) (*Pod, error) {
 		return nil, errors.Wrap(err, "can't unmarshal pod configuration")
 	}
 	cfg.ID = strings.Replace(f, ".yaml", "", 1)
-	cfg.ID = strings.Replace(cfg.ID, "kommence/pods/", "", 1)
+	cfg.ID = strings.Replace(cfg.ID, "jarvis/pods/", "", 1)
 	if cfg.Namespace == "" {
 		return nil, nil
 	}
@@ -45,7 +45,7 @@ func NewPod(f string) (*Pod, error) {
 
 func (p Pod) ToString(log *output.Logger) string {
 	return output.FromTemplate(log, `- {{.ID}}
-  name: {{.Name}}
+  name: {{.Service}}
   namespace: {{.Namespace}}
   {{if .Container}}container: {{.Container}}{{end}}
   port: {{.LocalPort}} -> {{.PodPort}}
@@ -62,7 +62,7 @@ func NewPodConfiguration(log *output.Logger, p string) (*Pods, error) {
 	config := Pods{Pods: make(map[string]*Pod), Shortcuts: make(map[string]*Pod)}
 	dir, err := os.Stat(p)
 	if err != nil || !dir.IsDir() {
-		log.Debugf("Pods folder not found in kommence config\n")
+		log.Debugf("Pods folder not found in jarvis config\n")
 		return &config, nil
 	}
 	err = filepath.WalkDir(p,

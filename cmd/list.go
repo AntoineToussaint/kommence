@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/AntoineToussaint/kommence/pkg/configuration"
-	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/jarvis/pkg/configuration"
+	"github.com/AntoineToussaint/jarvis/pkg/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
@@ -14,7 +14,7 @@ var listCmd = &cobra.Command{
 	Short: "List all possible tasks to run",
 	Run: func(cmd *cobra.Command, args []string) {
 		log := output.NewLogger(debug)
-		config, err := configuration.Load(log, kommenceDir)
+		config, err := configuration.Load(log, jarvisDir)
 		if err != nil {
 			log.Errorf(err.Error()+"\n", color.FgRed, color.Bold)
 			os.Exit(1)

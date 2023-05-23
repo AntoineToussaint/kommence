@@ -1,4 +1,4 @@
-module github.com/AntoineToussaint/kommence
+module github.com/AntoineToussaint/jarvis
 
 go 1.17
 

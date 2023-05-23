@@ -1,9 +1,0 @@
-id: all
-description: Run everything
-executables:
-  - counter
-  - error
-  - go
-  - json
-pods:
-  - sample

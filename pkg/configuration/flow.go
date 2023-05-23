@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/jarvis/pkg/output"
 	"github.com/pkg/errors"
 )
 
@@ -37,7 +37,7 @@ func NewFlow(f string) (*Flow, error) {
 		cfg.Description = "No description available"
 	}
 	cfg.ID = strings.Replace(f, ".yaml", "", 1)
-	cfg.ID = strings.Replace(cfg.ID, "kommence/flows/", "", 1)
+	cfg.ID = strings.Replace(cfg.ID, "jarvis/flows/", "", 1)
 	return &cfg, nil
 }
 
@@ -59,7 +59,7 @@ func NewFlowConfiguration(log *output.Logger, p string) (*Flows, error) {
 	config := Flows{Flows: make(map[string]*Flow), Shortcuts: make(map[string]*Flow)}
 	dir, err := os.Stat(p)
 	if err != nil || !dir.IsDir() {
-		log.Debugf("Flows folder not found in kommence config\n")
+		log.Debugf("Flows folder not found in jarvis config\n")
 		return &config, nil
 	}
 	err = filepath.WalkDir(p,

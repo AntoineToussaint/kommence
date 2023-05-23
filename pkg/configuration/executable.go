@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/jarvis/pkg/output"
 	"github.com/pkg/errors"
 )
 
@@ -51,7 +51,7 @@ func NewExecutable(f string) (*Executable, error) {
 		cfg.Description = "No description available"
 	}
 	cfg.ID = strings.Replace(f, ".yaml", "", 1)
-	cfg.ID = strings.Replace(cfg.ID, "kommence/executables/", "", 1)
+	cfg.ID = strings.Replace(cfg.ID, "jarvis/executables/", "", 1)
 	return &cfg, nil
 }
 
@@ -74,7 +74,7 @@ func NewExecutableConfiguration(log *output.Logger, p string) (*Executables, err
 	config := Executables{Commands: make(map[string]*Executable), Shortcuts: make(map[string]*Executable)}
 	dir, err := os.Stat(p)
 	if err != nil || !dir.IsDir() {
-		log.Debugf("Executables folder not found in kommence config\n")
+		log.Debugf("Executables folder not found in jarvis config\n")
 		return &config, nil
 	}
 	log.Debugf("walking %s", p)

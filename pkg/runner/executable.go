@@ -13,8 +13,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/AntoineToussaint/kommence/pkg/configuration"
-	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/jarvis/pkg/configuration"
+	"github.com/AntoineToussaint/jarvis/pkg/output"
 	"github.com/radovskyb/watcher"
 )
 
