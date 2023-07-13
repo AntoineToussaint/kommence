@@ -1,0 +1,8 @@
+id: executables
+description: Only executables
+executables:
+  - counter
+  - error
+  - go
+  - json
+    kubectl -n support run kiba -it --image=alpine/socat --tty --rm --expose=true --port=5601 tcp-listen:5601,fork,reuseaddr tcp-connect:kibana.default.svc.cluster.local:5601

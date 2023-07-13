@@ -3,8 +3,8 @@ package runner
 import (
 	"context"
 	"fmt"
-	"github.com/AntoineToussaint/jarvis/pkg/configuration"
-	"github.com/AntoineToussaint/jarvis/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"io"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

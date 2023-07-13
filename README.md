@@ -1,8 +1,8 @@
 
 
-# Welcome to jarvis! 
+# Welcome to kommence! 
 
-![CI/CD](https://github.com/AntoineToussaint/jarvis/actions/workflows/ci.yml/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/AntoineToussaint/jarvis)](https://goreportcard.com/report/github.com/AntoineToussaint/jarvis) [![license](http://img.shields.io/badge/license-Apache-blue.svg)](https://raw.githubusercontent.com/AntoineToussaint/jarvis/main/LICENSE)
+![CI/CD](https://github.com/AntoineToussaint/kommence/actions/workflows/ci.yml/badge.svg) [![Go Report Card](https://goreportcard.com/badge/github.com/AntoineToussaint/kommence)](https://goreportcard.com/report/github.com/AntoineToussaint/kommence) [![license](http://img.shields.io/badge/license-Apache-blue.svg)](https://raw.githubusercontent.com/AntoineToussaint/kommence/main/LICENSE)
 
 [![demo](https://asciinema.org/a/435947.svg)](https://asciinema.org/a/435947?autoplay=1)
 
@@ -12,13 +12,13 @@
 ### MacOS
 
 ```sh
-go get -u github.com/AntoineToussaint/jarvis
+go get -u github.com/AntoineToussaint/kommence
 ```
 
 ## Linux
 
 ```sh
-go get -u github.com/AntoineToussaint/jarvis
+go get -u github.com/AntoineToussaint/kommence
 ```
 
 ## Windows
@@ -32,11 +32,11 @@ To run these examples, clone this repository and place yourself in the correspon
 Command line mode
 
 ```shell
-jarvis start -x json,counter
+kommence start -x json,counter
 ```
 
 Interactive mode
 
 ```shell
-jarvis start -X
+kommence start -X
 ```

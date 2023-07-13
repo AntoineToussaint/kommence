@@ -2,7 +2,7 @@ package output_test
 
 import (
 	"bytes"
-	"github.com/AntoineToussaint/jarvis/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

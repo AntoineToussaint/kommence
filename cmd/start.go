@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
-	"github.com/AntoineToussaint/jarvis/pkg/configuration"
-	"github.com/AntoineToussaint/jarvis/pkg/output"
-	"github.com/AntoineToussaint/jarvis/pkg/runner"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/runner"
 	"github.com/c-bata/go-prompt"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
@@ -30,7 +30,7 @@ var startCmd = &cobra.Command{
 		log := output.NewLogger(debug)
 
 		log.Debugf("starting in debug mode\n")
-		config, err := configuration.Load(log, jarvisDir)
+		config, err := configuration.Load(log, kommenceDir)
 		if err != nil {
 			log.Errorf(err.Error(), color.FgRed, color.Bold)
 			os.Exit(1)
@@ -53,7 +53,7 @@ var startCmd = &cobra.Command{
 			log.Debugf("starting runner\n")
 			err := r.Run(ctx, c)
 			if err != nil {
-				log.Printf("Stopping jarvis because of unrecoverable error\n")
+				log.Printf("Stopping kommence because of unrecoverable error\n")
 			}
 			// Stop if/when we are done
 			log.Debugf("stopping the context\n")
@@ -63,12 +63,12 @@ var startCmd = &cobra.Command{
 		for {
 			select {
 			case <-ctx.Done():
-				log.Debugf("Stopping jarvis from context.\n", color.Bold)
+				log.Debugf("Stopping kommence from context.\n", color.Bold)
 				stop()
 				break L
 
 			case <-cancel:
-				log.Debugf("Stopping jarvis from Ctrl-C.\n", color.Bold)
+				log.Debugf("Stopping kommence from Ctrl-C.\n", color.Bold)
 				stop()
 				break L
 

@@ -1,7 +1,7 @@
 package runner_test
 
 import (
-	"github.com/AntoineToussaint/jarvis/pkg/runner"
+	"github.com/AntoineToussaint/kommence/pkg/runner"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

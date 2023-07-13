@@ -2,27 +2,27 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/AntoineToussaint/jarvis/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/output"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"os"
 )
 
-var jarvisDir string
+var kommenceDir string
 var kubeConfigPath string
 var debug bool
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "jarvis",
+	Use:   "kommence",
 	Short: "Start multiple tasks: executables, pod forwarding, flows",
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	Run: func(cmd *cobra.Command, args []string) {
 		log := output.NewLogger(debug)
-		log.Printf("Welcome to jarvis!\n", color.Bold)
+		log.Printf("Welcome to kommence!\n", color.Bold)
 		log.Printf("To get started, run: ")
-		log.Printf(" jarvis init\n", color.Bold)
+		log.Printf(" kommence init\n", color.Bold)
 	},
 }
 
@@ -41,7 +41,7 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	rootCmd.PersistentFlags().StringVar(&jarvisDir, "config", "jarvis", "jarvis folder (default is jarvis")
+	rootCmd.PersistentFlags().StringVar(&kommenceDir, "config", "kommence", "kommence folder (default is kommence")
 	rootCmd.PersistentFlags().StringVar(&kubeConfigPath, "kube", "", "kubernetes config path")
 	rootCmd.PersistentFlags().BoolVarP(&debug, "debug", "d", false, "debug mode")
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/AntoineToussaint/jarvis/cmd"
+	"github.com/AntoineToussaint/kommence/cmd"
 )
 
 func main() {

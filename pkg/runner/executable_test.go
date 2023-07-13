@@ -2,9 +2,9 @@ package runner_test
 
 import (
 	"context"
-	"github.com/AntoineToussaint/jarvis/pkg/configuration"
-	"github.com/AntoineToussaint/jarvis/pkg/output"
-	"github.com/AntoineToussaint/jarvis/pkg/runner"
+	"github.com/AntoineToussaint/kommence/pkg/configuration"
+	"github.com/AntoineToussaint/kommence/pkg/output"
+	"github.com/AntoineToussaint/kommence/pkg/runner"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
