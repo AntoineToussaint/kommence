@@ -1,8 +1,8 @@
 id: json
 shortcut: j
 description: Run a counter in JSON
-cmd: ./examples/json.sh
+cmd: ./json.sh
 env:
   KOMMENCE_VAR: kommence!
 watch:
-  - examples/json.sh
+  - json.sh

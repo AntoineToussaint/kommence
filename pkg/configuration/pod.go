@@ -13,6 +13,7 @@ import (
 
 type Pod struct {
 	ID          string
+	Name        string
 	Shortcut    string
 	Description string
 	Service     string
@@ -32,7 +33,7 @@ func NewPod(f string) (*Pod, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "can't unmarshal pod configuration")
 	}
-	cfg.ID = strings.Replace(f, ".yaml", "", 1)
+	cfg.ID = strings.Replace(f, ".yml", "", 1)
 	cfg.ID = strings.Replace(cfg.ID, "kommence/pods/", "", 1)
 	if cfg.Namespace == "" {
 		return nil, nil
@@ -67,7 +68,7 @@ func NewPodConfiguration(log *output.Logger, p string) (*Pods, error) {
 	}
 	err = filepath.WalkDir(p,
 		func(p string, d os.DirEntry, err error) error {
-			if !strings.HasSuffix(p, ".yaml") {
+			if !strings.HasSuffix(p, ".yml") {
 				return nil
 			}
 			c, err := NewPod(p)

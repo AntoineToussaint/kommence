@@ -14,7 +14,7 @@ func FromTemplate(log *Logger, tmpl string, ob interface{}) string {
 	var out bytes.Buffer
 	err = t.Execute(&out, ob)
 	if err != nil {
-		log.Errorf("can't templatize: %v", err)
+		log.Errorf("can't templatize [%s]: %v", tmpl, err)
 		return ""
 	}
 	return out.String()

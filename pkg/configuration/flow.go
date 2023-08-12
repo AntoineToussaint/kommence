@@ -36,7 +36,7 @@ func NewFlow(f string) (*Flow, error) {
 	if cfg.Description == "" {
 		cfg.Description = "No description available"
 	}
-	cfg.ID = strings.Replace(f, ".yaml", "", 1)
+	cfg.ID = strings.Replace(f, ".yml", "", 1)
 	cfg.ID = strings.Replace(cfg.ID, "kommence/flows/", "", 1)
 	return &cfg, nil
 }
@@ -67,7 +67,7 @@ func NewFlowConfiguration(log *output.Logger, p string) (*Flows, error) {
 			if err != nil {
 				return err
 			}
-			if !strings.HasSuffix(p, ".yaml") {
+			if !strings.HasSuffix(p, ".yml") {
 				return nil
 			}
 			c, err := NewFlow(p)

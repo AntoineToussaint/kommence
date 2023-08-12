@@ -1,4 +1,5 @@
 id: pods
+name: pods
 description: Only pods
 pods:
   - test

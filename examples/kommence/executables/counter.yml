@@ -1,6 +1,6 @@
 id: counter
 shortcut: c
 description: Run a counter
-cmd: ./examples/counter.sh
+cmd: ./counter.sh
 watch:
-  - examples/counter.sh
+  - counter.sh

@@ -50,7 +50,7 @@ func NewExecutable(f string) (*Executable, error) {
 	if cfg.Description == "" {
 		cfg.Description = "No description available"
 	}
-	cfg.ID = strings.Replace(f, ".yaml", "", 1)
+	cfg.ID = strings.Replace(f, ".yml", "", 1)
 	cfg.ID = strings.Replace(cfg.ID, "kommence/executables/", "", 1)
 	return &cfg, nil
 }
@@ -79,7 +79,7 @@ func NewExecutableConfiguration(log *output.Logger, p string) (*Executables, err
 	}
 	log.Debugf("walking %s", p)
 	err = filepath.WalkDir(p, func(s string, d fs.DirEntry, err error) error {
-		if !strings.HasSuffix(s, ".yaml") {
+		if !strings.HasSuffix(s, ".yml") {
 			return nil
 		}
 		c, err := NewExecutable(s)

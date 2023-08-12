@@ -1,4 +1,5 @@
 id: all
+name: all
 description: Run everything
 executables:
   - counter

@@ -1,4 +1,3 @@
-id: test
 shortcut: t
 description: Sample pod test
 name: hello-node

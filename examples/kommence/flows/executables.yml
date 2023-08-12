@@ -1,4 +1,5 @@
 id: executables
+names: executables
 description: Only executables
 executables:
   - counter
