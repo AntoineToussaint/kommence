@@ -18,6 +18,7 @@ type Executable struct {
 	Shortcut    string
 	Description string
 	Cmd         string
+	Path        string
 	Env         map[string]string
 	Delay       string
 	Watch       []string

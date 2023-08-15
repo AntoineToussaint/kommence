@@ -20,6 +20,7 @@ import (
 
 type Executable struct {
 	cmd        string
+	path       string
 	args       []string
 	command    *exec.Cmd
 	stdErrMode string
@@ -34,6 +35,7 @@ func NewExecutable(logger *output.Logger, c *configuration.Executable) Runnable 
 	return &Executable{
 		logger:     logger,
 		config:     c,
+		path:       c.Path,
 		cmd:        args[0],
 		args:       args[1:],
 		stdErrMode: c.StdErr,
@@ -45,7 +47,6 @@ func (e *Executable) ID() string {
 }
 
 func (e *Executable) Start(ctx context.Context, rec chan output.Message) error {
-	// Watcher
 	e.logger.Debugf("creating watcher: %v\n", e.ID())
 	w := e.createWatcher()
 	go func() {
@@ -116,6 +117,9 @@ func (e *Executable) start(ctx context.Context, rec chan output.Message) {
 	}
 	e.logger.Debugf("starting %v\n", e.ID())
 	e.command = exec.CommandContext(ctx, e.cmd, e.args...)
+	if fi, err := os.Stat(e.path); err == nil && fi.IsDir() {
+		e.command.Dir = e.path
+	}
 	e.command.Env = os.Environ()
 	for k, v := range e.config.Env {
 		e.command.Env = append(e.command.Env, fmt.Sprintf("%s=%s", k, v))
